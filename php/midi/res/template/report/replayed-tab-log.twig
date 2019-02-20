@@ -1,0 +1,49 @@
+{% if firstTab == 1 %}
+    {% set tabActive = "active" %}
+{% else %}
+    {% set tabActive = "" %}
+{% endif %}
+
+<div class="tab-pane {{ tabActive }}" id="{{ navHref }}-{{ index }}">
+    {% if replayedSessions.sessions|length > 0 %}
+        <div class="card">
+            <!-- log nav tab -->
+            <div class="log-nav-tab" id="log-header-{{ index }}">
+                <ul class="nav nav-tabs" role="tablist">
+                    <!-- log nav tab name -->
+                    {% for file, contents in replayedSessions.sessions[index].Logs %}
+                        <li class="nav-item">
+                            {% if loop.first %}
+                                {% set navLinkClass = "nav-link active" %}
+                            {% else %}
+                                {% set navLinkClass = "nav-link" %}
+                            {% endif %}
+                            <a class="{{ navLinkClass }}" role="tab" data-toggle="tab"
+                               href="#log-{{ index }}-{{ loop.index }}">{{ file|e }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- log tab content -->
+            <div class="card-body">
+                <div class="tab-content">
+                    {% for file, contents in replayedSessions.sessions[index].Logs %}
+                        {% if loop.first %}
+                            {% set isActive = "active" %}
+                        {% else %}
+                            {% set isActive = "" %}
+                        {% endif %}
+                        <div class="tab-pane {{ isActive }}" id="log-{{ index }}-{{ loop.index }}">
+                            {% for content in contents %}
+                                <pre class="collapse-soft-break">{{ content|e }}</pre>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        No logs.
+    {% endif %}
+</div>

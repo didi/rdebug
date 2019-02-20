@@ -1,0 +1,17 @@
+{% if firstTab == 1 %}
+    {% set tabActive = "active" %}
+{% else %}
+    {% set tabActive = "" %}
+{% endif %}
+
+<div class="tab-pane {{ tabActive }}" id="{{ navHref }}-{{ index }}">
+    {% if replayedSessions.sessions[index].TraceUrl|length > 0 %}
+    <div class="card-body">
+        <a href="{{ replayedSessions.sessions[index].TraceUrl }}" target="_blank" class="btn btn-primary">Click Open Trace</a>
+    </div>
+    {% else %}
+        <div class="card-body">
+            <p class="card-text">run command add -T option to generate xdebug trace</p>
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Midi: Xdebug Trace Report</title>
+    <script>
+        var runOnLoad = function (c, o, d, e) {
+            function x() {
+                for (e = 1; c.length;) c.shift()()
+            }
+            o[d] ? (document[d]('DOMContentLoaded', x, 0), o[d]('load', x, 0)) : o.attachEvent('onload', x);
+            return function (t) {
+                e ? o.setTimeout(t, 0) : c.push(t)
+            }
+        }([], window, 'addEventListener');
+    </script>
+    <script type="text/javascript" src="static/collapsible/CollapsibleLists.js"></script>
+    <script type="text/javascript">
+        runOnLoad(function () {
+            CollapsibleLists.apply();
+        });
+    </script>
+    <style type="text/css">
+        body {
+            font-family: Georgia, serif, "Microsoft YaHei", 微软雅黑, STXihei, 华文细黑 !important;
+        }
+
+        .treeView {
+            -moz-user-select: none;
+            position: relative;
+            padding-bottom: .05rem;
+        }
+
+        .treeView ul {
+            margin: 0 0 0 -1.5em;
+            padding: 0 0 0 1.5em;
+        }
+
+        .treeView ul ul {
+            background: url('static/collapsible/list-item-contents.png') repeat-y left;
+        }
+
+        .treeView li.lastChild > ul {
+            background-image: none;
+        }
+
+        .treeView li {
+            margin: 0;
+            padding: 0;
+            background: url('static/collapsible/list-item-root.png') no-repeat top left;
+            list-style-position: inside;
+            list-style-image: url('static/collapsible/button.png');
+            cursor: auto;
+        }
+
+        .treeView li.collapsibleListOpen {
+            list-style-image: url('static/collapsible/button-open.png');
+            cursor: pointer;
+        }
+
+        .treeView li.collapsibleListClosed {
+            list-style-image: url('static/collapsible/button-closed.png');
+            cursor: pointer;
+        }
+
+        .treeView li li {
+            background-image: url('static/collapsible/list-item.png');
+            padding-left: 1.5em;
+        }
+
+        .treeView li.lastChild {
+            background-image: url('static/collapsible/list-item-last.png');
+        }
+
+        .treeView li.collapsibleListOpen {
+            background-image: url('static/collapsible/list-item-open.png');
+        }
+
+        .treeView li.collapsibleListOpen.lastChild {
+            background-image: url('static/collapsible/list-item-last-open.png');
+        }
+    </style>
+</head>
+<body>
+<ul class="treeView">
+    <li>
+        {{ SessionId }}
+        <ul class="collapsibleList">
+            {{ TraceList|raw }}
+        </ul>
+    </li>
+</ul>
+</body>
+</html>

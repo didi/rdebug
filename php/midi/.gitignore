@@ -1,0 +1,7 @@
+.idea
+*.iml
+vendor
+*.swp
+tags
+cscope.out
+*.DS_Store

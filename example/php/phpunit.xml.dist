@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpunit backupGlobals="true" colors="true" convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true" convertWarningsToExceptions="true" stopOnFailure="false">
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false" addUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">./</directory>
+        </whitelist>
+        <blacklist>
+        </blacklist>
+    </filter>
+</phpunit>

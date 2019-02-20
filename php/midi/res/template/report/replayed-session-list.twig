@@ -1,0 +1,58 @@
+<div id="accordion">
+    {% if replayedSessions.sessions|length == 1 %}
+        {% set expanded = "true" %}
+        {% set show = "show" %}
+    {% else %}
+        {% set expanded = "false" %}
+        {% set show = "" %}
+    {% endif %}
+    {% for index, session in replayedSessions.sessions %}
+        <div class="card session-lists-card-header">
+            <!-- session list title -->
+            {% if session.Same == 1 %}
+                {% set session_color = "success" %}
+            {% else %}
+                {% set session_color = "danger" %}
+            {% endif %}
+            <a class="btn btn-{{ session_color }} btn-block text-left session-list-a" role="button"
+               data-toggle="collapse" href="#session-collapse-{{ index }}" aria-expanded="{{ expanded }}"
+               aria-controls="session-collapse-{{ index }}">#{{ index+1 }}&nbsp;{{ session.Request[:70] }}</a>
+
+            <!-- session content -->
+            <div id="session-collapse-{{ index }}" class="collapse {{ show }}">
+                <div class="card-body">
+                    <div id="nav-accordion-{{ index }}">
+                        <div class="card">
+                            <!-- session nav tab -->
+                            <div class="card-header" id="nav-header-{{ index }}">
+                                <ul class="nav nav-tabs card-header-tabs">
+                                    <!-- nav tab name -->
+                                    {% for nav in replayedSessions.navTabs %}
+                                        <li class="nav-item">
+                                            {% if loop.first %}
+                                                {% set navLinkClass = "nav-link active" %}
+                                            {% else %}
+                                                {% set navLinkClass = "nav-link" %}
+                                            {% endif %}
+                                            <a class="{{ navLinkClass }}" role="tab" data-toggle="tab"
+                                               href="#{{ nav.href }}-{{ index }}">{{ nav.name }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+
+                            <!-- session tab content -->
+                            <div class="card-body">
+                                <div class="tab-content">
+                                    {% for nav in replayedSessions.navTabs %}
+                                        {% include(nav.template) with {'navHref': nav.href, 'index': index, 'firstTab': loop.first } %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

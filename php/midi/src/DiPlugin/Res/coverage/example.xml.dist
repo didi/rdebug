@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phpunit>
+    <nuwa>
+        <recordFile>/home/xiaoju/webroot/gulfstream/application/carpool/v1/index.php</recordFile>
+        <framework>ci</framework>
+    </nuwa>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">/home/xiaoju/webroot/gulfstream/application/carpool/v1/controllers</directory>
+            <directory suffix=".php">/home/xiaoju/webroot/gulfstream/application/carpool/v1/models</directory>
+            <directory suffix=".php">/home/xiaoju/webroot/gulfstream/application/carpool/v1/logics</directory>
+            <exclude>
+                <directory suffix=".php">/home/xiaoju/webroot/gulfstream/application/carpool/v1/controllers/test</directory>
+                <file>/home/xiaoju/webroot/gulfstream/application/carpool/v1/controllers/welcome.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

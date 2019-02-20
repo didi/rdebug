@@ -1,0 +1,15 @@
+package: github.com/didi/rdebug/koala
+import:
+- package: github.com/json-iterator/go
+  version: ff2b70c1dbffdd98567bd8c2f9449d97c0d04c88
+- package: github.com/v2pro/plz
+  version: 03cb46d336e021ccc579800e033a9a48d09a87d0
+  subpackages:
+  - countlog
+  - witch
+  - statik
+testImport:
+- package: github.com/stretchr/testify
+  version: ^1.1.4
+  subpackages:
+  - require

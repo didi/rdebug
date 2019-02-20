@@ -1,0 +1,10 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+$loader = require __DIR__ . '/../src/bootstrap.php';
+
+$app = Midi\Factory::createApp($loader);
+if ('phar:' === substr(__FILE__, 0, 5)) {
+    $app->add(new Midi\Command\UpdateCommand());
+}
+$app->run();

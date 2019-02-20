@@ -1,0 +1,25 @@
+rdebug-dir: /tmp/midi/
+
+koala:
+    inbound-port: 5514
+    sub-port: 5515
+    outbound-port: 5516
+    replay-match-threshold: 0.75
+    inbound-read-timeout: 86400s
+    gc-global-status-timeout: 86400s
+    inbound-protocol: HTTP # HTTP or FastCGI, default is HTTP
+
+php:
+    koala-php-ini:
+        memory_limit: 2G
+        error_log: /tmp/midi/log/php-error.log
+    differ: Midi\Differ\Differ
+
+    # for elastic
+    preload-plugins:
+        - Midi\ElasticPlugin
+    session-resolver: Midi\Resolver\ElasticResolver
+
+    # set your elastic search url
+    # http://username:password@ip:port/Index/Type/_search
+    elastic-search-url:

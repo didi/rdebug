@@ -1,0 +1,30 @@
+{
+  "chmod": "0755",
+  "directories": [
+    "src",
+    "res"
+  ],
+  "files": ["version.txt", "LICENSE", "CHANGELOG.md", "README.md"],
+  "finder": [
+    {
+      "name": "*.php",
+      "notPath": ["#.*/Tests#", "#.*/tests/#", "#.*/test/#"],
+      "in": [
+        "vendor"
+      ]
+    },
+    {
+      "in": [
+        "vendor/phpunit/php-code-coverage/src/Report/Html"
+      ]
+    }
+  ],
+  "main": "bin/midi",
+  "output": "midi-diplugin.phar",
+  "stub": true,
+  "compactors": [
+    "Herrera\\Box\\Compactor\\Json",
+    "Herrera\\Box\\Compactor\\Php"
+  ],
+  "compression": "BZ2"
+}

@@ -1,0 +1,131 @@
+{% if firstTab == 1 %}
+    {% set tabActive = "active" %}
+{% else %}
+    {% set tabActive = "" %}
+{% endif %}
+
+<div class="tab-pane {{ tabActive }}" id="{{ navHref }}-{{ index }}">
+    <div class="card">
+        <div class="card-header up-title-c-h bg-light">
+            <div class="row text-left">
+                <div class="col col-1">Protocol</div>
+                <div class="col col-6">Request
+                    <span class="badge up-btn-success" data-toggle="tooltip" title="Matched: 100% Similarity">Success</span>
+                    <span class="badge up-btn-ignore" data-toggle="tooltip" title="Matched: Exist noise">Ignore</span>
+                    <span class="badge up-btn-diff" data-toggle="tooltip" title="Matched: Exist diff">Diff</span>
+                    <span class="badge up-btn-miss" data-toggle="tooltip" title="Missing">Missing</span>
+                    <span class="badge up-btn-not-match" data-toggle="tooltip" title="New Request or Not Matched">Not Matched</span>
+                </div>
+                <div class="col col-4">Response</div>
+                <div class="col col-1">Similarity</div>
+            </div>
+        </div>
+        {% set callOutbounds = replayedSessions.sessions[index].CallOutbounds %}
+        {% for calledIdx, callOutbound in callOutbounds %}
+            <!-- one upstream call -->
+            {% set collapseHref = "upstream-collapse-" ~ index ~ "-" ~ calledIdx %}
+            {% if callOutbound.MatchType >= 1 %}
+                {# matched: success, ignore, diff #}
+                {% if callOutbound.Similarity == 100 %}
+                    {% set card_header_color = "up-c-h up-bg-success" %}
+                {% else %}
+                    {# TODO ignore or diff #}
+                    {% set card_header_color = "up-c-h up-bg-diff" %}
+                {% endif %}
+            {% else %}
+                {# case1: not matched(new call or not match); case2: miss call #}
+                {% if callOutbound.MatchType == 0 %}
+                    {# miss call #}
+                    {% set card_header_color = "up-c-h up-bg-miss" %}
+                {% else %}
+                    {# not matched #}
+                    {% set card_header_color = "up-c-h up-bg-not-match" %}
+                {% endif %}
+            {% endif %}
+            <div class="card-header {{ card_header_color }}">
+                <div class="row">
+                    {% if callOutbound.MatchType == 0 %}
+                        {# missing call, title show online request data, without diff #}
+                        <div class="col col-1 text-left">
+                            <a class="collapsed" role="button" data-toggle="collapse" href="#{{ collapseHref }}" aria-expanded="false" aria-controls="{{ collapseHref }}">
+                                {{ callOutbound.Protocol }}
+                            </a>
+                        </div>
+                        <div class="col col-6 text-truncate">
+                            <a class="collapsed" role="button" data-toggle="collapse" href="#{{ collapseHref }}" aria-expanded="false" aria-controls="{{ collapseHref }}">
+                                <span data-toggle="tooltip" title="{{ callOutbound.MatchedRequest|e }}">{{ callOutbound.MatchedRequest[:70]|e }}</span>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="col col-1 text-left">
+                            <a class="collapsed" role="button" data-toggle="collapse" href="#{{ collapseHref }}" aria-expanded="false" aria-controls="{{ collapseHref }}"
+                               onclick="do_diff('online-{{ index }}-{{ calledIdx }}', 'test-{{ index }}-{{ calledIdx }}', 'up-diff-output-{{ index }}-{{ calledIdx }}')">
+                                {{ callOutbound.Protocol }}
+                            </a>
+                        </div>
+                        <div class="col col-6 text-truncate">
+                            <a class="collapsed" role="button" data-toggle="collapse" href="#{{ collapseHref }}" aria-expanded="false" aria-controls="{{ collapseHref }}"
+                                onclick="do_diff('online-{{ index }}-{{ calledIdx }}', 'test-{{ index }}-{{ calledIdx }}', 'up-diff-output-{{ index }}-{{ calledIdx }}')">
+                                <span data-toggle="tooltip" title="{{ callOutbound.Request|e }}">{{ callOutbound.Request[:70]|e }}</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                    <div class="col col-4 text-truncate">
+                        <span data-toggle="tooltip" title="{{ callOutbound.MatchedResponse|e }}">{{ callOutbound.MatchedResponse[:55]|e }}</span>
+                    </div>
+                    <div class="col col-1 text-left">{{ callOutbound.Similarity }}</div>
+                </div>
+            </div>
+            <div id="{{ collapseHref }}" class="collapse">
+                <div class="card-body">
+                    <div class="up-detail">
+                        <nav>
+                            <div class="nav nav-tabs up-detail-nav" role="tablist">
+                                {% if callOutbound.MatchType == 0 %}
+                                    {# missing call: only show online request & response #}
+                                    <a class="nav-item nav-link active" data-toggle="tab" href="#up-o-req-{{ index }}-{{ calledIdx }}"
+                                       role="tab" aria-controls="up-o-req-{{ index }}-{{ calledIdx }}" aria-selected="false">Online Request</a>
+                                    <a class="nav-item nav-link" data-toggle="tab" href="#up-o-resp-{{ index }}-{{ calledIdx }}"
+                                       role="tab" aria-controls="up-o-resp-{{ index }}-{{ calledIdx }}" aria-selected="false">Online Response</a>
+                                {% else %}
+                                    <a class="nav-item nav-link active" data-toggle="tab" href="#up-diff-{{ index }}-{{ calledIdx }}"
+                                       role="tab" aria-controls="up-diff-{{ index }}-{{ calledIdx }}" aria-selected="true">O == T Diff</a>
+                                    <a class="nav-item nav-link" data-toggle="tab" href="#up-t-req-{{ index }}-{{ calledIdx }}"
+                                       role="tab" aria-controls="up-t-req-{{ index }}-{{ calledIdx }}" aria-selected="false">Test Request</a>
+                                    <a class="nav-item nav-link" data-toggle="tab" href="#up-o-req-{{ index }}-{{ calledIdx }}"
+                                       role="tab" aria-controls="up-o-req-{{ index }}-{{ calledIdx }}" aria-selected="false">Matched Online Request</a>
+                                    <a class="nav-item nav-link" data-toggle="tab" href="#up-o-resp-{{ index }}-{{ calledIdx }}"
+                                       role="tab" aria-controls="up-o-resp-{{ index }}-{{ calledIdx }}" aria-selected="false">Matched Response</a>
+                                {% endif %}
+                            </div>
+                        </nav>
+                        <div class="tab-content up-detail-body">
+                            {% set show_active = "show active" %}
+                            {% if callOutbound.MatchType != 0 %}
+                                <div class="tab-pane fade {{ show_active }}" id="up-diff-{{ index }}-{{ calledIdx }}" role="tabpanel">
+                                    <div class="card-body" id="up-diff-output-{{ index }}-{{ calledIdx }}"></div>
+                                </div>
+                                <div class="tab-pane fade" id="up-t-req-{{ index }}-{{ calledIdx }}" role="tabpanel">
+                                    <div class="card-body">
+                                        <pre id="test-{{ index }}-{{ calledIdx }}" class="collapse-soft-break">{{ callOutbound.Request|e }}</pre>
+                                    </div>
+                                </div>
+                                {% set show_active = "" %}
+                            {% endif %}
+                            <div class="tab-pane fade {{ show_active }}" id="up-o-req-{{ index }}-{{ calledIdx }}" role="tabpanel">
+                                <div class="card-body">
+                                    <pre id="online-{{ index }}-{{ calledIdx }}" class="collapse-soft-break">{{ callOutbound.MatchedRequest|e }}</pre>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="up-o-resp-{{ index }}-{{ calledIdx }}" role="tabpanel">
+                                <div class="card-body">
+                                    <pre class="collapse-soft-break">{{ callOutbound.MatchedResponse|e }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

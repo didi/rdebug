@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/report.css">
+    <title>Midi Replayed Report</title>
+</head>
+<body>
+<div class="container">
+    {{ include('replayed-alter.twig') }}
+    {{ include('replayed-session-list.twig') }}
+</div>
+<script src="static/jquery-3.3.1.slim.min.js"></script>
+<script src="static/popper-1.14.3.min.js"></script>
+<script src="static/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="static/diff_match_patch.js"></script>
+<script src="static/report.js"></script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+diff --git a/src/CodeCoverage.php b/src/CodeCoverage.php
+index f3e9eaa..ca79703 100644
+--- a/src/CodeCoverage.php
++++ b/src/CodeCoverage.php
+@@ -339,7 +339,15 @@ public function append(array $data, $id = null, $append = true, $linesToBeCovere
+         }
+ 
+         $this->applyListsFilter($data);
+-        $this->applyIgnoredLinesFilter($data);
++
++        /**
++         * For speed up, when coverage for multi request, collect data first
++         * then generate report, filter at report period
++         */
++        if ($this->shouldApplyIgnoredLinesFilter) {
++            $this->applyIgnoredLinesFilter($data);
++        }
++
+         $this->initializeFilesThatAreSeenTheFirstTime($data);
+ 
+         if (!$append) {
+@@ -725,6 +733,27 @@ private function addUncoveredFilesFromWhitelist()
+             \array_keys($this->data)
+         );
+ 
++        if (!$this->processUncoveredFilesFromWhitelist && $this->postProcessUncoveredFiles) {
++            $this->driver->start(true);
++            foreach ($uncoveredFiles as $file) {
++                if ($this->filter->isFile($file) && !$this->isConflict($file)) {
++                    include_once($file);
++                }
++            }
++            $data     = [];
++            $coverage = $this->driver->stop();
++            foreach ($coverage as $file => $fileCoverage) {
++                if ($this->filter->isFiltered($file)) {
++                    continue;
++                }
++                foreach (\array_keys($fileCoverage) as $key) {
++                    if ($fileCoverage[$key] === Driver::LINE_EXECUTED) {
++                        $fileCoverage[$key] = Driver::LINE_NOT_EXECUTED;
++                    }
++                }
++                $data[$file] = $fileCoverage;
++            }
++        } else {
+         foreach ($uncoveredFiles as $uncoveredFile) {
+             if (!\file_exists($uncoveredFile)) {
+                 continue;
+@@ -738,6 +767,7 @@ private function addUncoveredFilesFromWhitelist()
+                 $data[$uncoveredFile][$i] = Driver::LINE_NOT_EXECUTED;
+             }
+         }
++        }
+ 
+         $this->append($data, 'UNCOVERED_FILES_FROM_WHITELIST');
+     }
+@@ -1181,4 +1211,178 @@ private function linesToCodeUnits(array $data)
+ 
+         return \array_unique($codeUnits);
+     }
++
++    /** MODIFY */
++    /**
++     * Whether apply ignored lines filter
++     */
++    protected $shouldApplyIgnoredLinesFilter = true;
++
++    /**
++     * Post process uncovered files
++     */
++    protected $postProcessUncoveredFiles = false;
++
++    /**
++     * Confilct files.
++     *
++     * @var array
++     */
++    protected $conflictFiles = [];
++
++    /**
++     * @param bool $flag
++     *
++     * @throws InvalidArgumentException
++     */
++    public function setShouldApplyIgnoredLinesFilter($flag) {
++        if (!\is_bool($flag)) {
++            throw InvalidArgumentException::create(
++                1,
++                'boolean'
++            );
++        }
++        $this->shouldApplyIgnoredLinesFilter = $flag;
++    }
++
++    public function setPostProcessUncoveredFiles($flag) {
++        if (!\is_bool($flag)) {
++            throw InvalidArgumentException::create(
++                1,
++                'boolean'
++            );
++        }
++        $this->postProcessUncoveredFiles = $flag;
++    }
++
++    public function setConflictFiles($conflict)
++    {
++        $this->conflictFiles = $conflict;
++    }
++
++    private function isConflict($file)
++    {
++        if (!isset($this->conflictFiles[$file])) {
++            return false;
++        }
++
++        foreach ($this->conflictFiles[$file] as $class) {
++            if (class_exists($class)) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++
++    protected function touchFileIfNotExist($filename)
++    {
++        if (!file_exists($filename)) {
++            $dir = dirname($filename);
++            if (!file_exists($dir) && !mkdir($dir, 0777, true)) {
++                throw new RuntimeException("Invalid filename:$filename");
++            }
++            touch($filename);
++            if (!file_exists($filename)) {
++                throw new RuntimeException("Create filename:$filename fail");
++            }
++        }
++        return realpath($filename);
++    }
++
++    public function saveToFile($file, $raw = false)
++    {
++        $file = $this->touchFileIfNotExist($file);
++
++        if ($this->processUncoveredFilesFromWhitelist) {
++            $data = $this->getData(true);
++        } else {
++            $data = $this->getData($raw);
++        }
++
++        $row = ['data' => $data, 'tests' => $this->getTests(),];
++        file_put_contents($file, json_encode($row) . "\n", FILE_APPEND);
++    }
++
++    public function stopSaveToFile($file)
++    {
++        $data = $this->stop();
++        $this->saveToFile($file);
++        return $data;
++    }
++
++    /**
++     * Merges the data from another instance.
++     *
++     * Merge multi request coverage data, data was filterd
++     *
++     * @param CodeCoverage $that
++     */
++    public function fastMerge(CodeCoverage $that)
++    {
++        foreach ($that->data as $file => $lines) {
++            if (!isset($this->data[$file])) {
++                $this->data[$file] = $lines;
++                continue;
++            }
++
++            foreach ($lines as $line => $data) {
++                if ($data !== null) {
++                    if (!isset($this->data[$file][$line])) {
++                        $this->data[$file][$line] = $data;
++                    } else {
++                        $this->data[$file][$line] = \array_unique(
++                            \array_merge($this->data[$file][$line], $data)
++                        );
++                    }
++                }
++            }
++        }
++
++        $this->tests  = \array_merge($this->tests, $that->getTests());
++        $this->report = null;
++    }
++
++    /**
++     * Instance from file.
++     *
++     * @param string $filename
++     *
++     * @throws RuntimeException
++     * @return CodeCoverage
++     */
++    public static function instanceFromFile($filename)
++    {
++        if (!file_exists($filename)) {
++            throw new RuntimeException("Can not find filename:$filename");
++        }
++
++        $coverage = new static();
++        $coverage->setCacheTokens(true);
++
++        $handle = fopen($filename, "r");
++        if ($handle) {
++            while (($json = fgets($handle)) !== false) {
++                if (empty($json)) {
++                    continue;
++                }
++                $record = json_decode($json, true);
++                if (json_last_error() !== JSON_ERROR_NONE) {
++                    continue;
++                }
++                $coverage->applyIgnoredLinesFilter($record['data']);
++                $tmp = new static();
++                $tmp->setData($record['data'] ?? []);
++                $tmp->setTests($record['tests'] ?? []);
++                $coverage->fastMerge($tmp);
++                unset($tmp);
++            }
++            if (!feof($handle)) {
++                throw new RuntimeException("Unexpected fgets fail");
++            }
++            fclose($handle);
++        }
++
++        return $coverage;
++    }
+ }

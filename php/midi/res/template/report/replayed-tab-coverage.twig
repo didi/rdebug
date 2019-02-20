@@ -1,0 +1,17 @@
+{% if firstTab == 1 %}
+    {% set tabActive = "active" %}
+{% else %}
+    {% set tabActive = "" %}
+{% endif %}
+
+<div class="tab-pane {{ tabActive }}" id="{{ navHref }}-{{ index }}">
+    {% if replayedSessions.sessions[index].CoverageUrl|length > 0 %}
+    <div class="card-body">
+        <a href="{{ replayedSessions.sessions[index].CoverageUrl }}" target="_blank" class="btn btn-primary">Click Open Coverage</a>
+    </div>
+    {% else %}
+        <div class="card-body">
+            <p class="card-text">run command add -C option to generate php code coverage report</p>
+        </div>
+    {% endif %}
+</div>

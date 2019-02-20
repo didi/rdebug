@@ -1,0 +1,27 @@
+{% if replayedAlter.all_success > 0 %}
+    <div class="alert alert-success report-alter" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h4>
+            Great!
+        </h4>All sessions have passed!
+    </div>
+{% else %}
+    <div class="alert alert-danger report-alter" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h4>
+            Error!
+        </h4>Replayed sessions exist different! Please pay attention to it.
+    </div>
+{% endif %}
+
+<button type="button" class="btn btn-outline-success btn-sm">
+    Success <span class="badge badge-light">{{ replayedAlter.success }}</span>
+</button>
+<button type="button" class="btn btn-outline-danger btn-sm">
+    Diff <span class="badge badge-light">{{ replayedAlter.error }}</span>
+</button>
+

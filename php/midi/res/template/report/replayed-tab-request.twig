@@ -1,0 +1,53 @@
+{% if firstTab == 1 %}
+    {% set tabActive = "active" %}
+{% else %}
+    {% set tabActive = "" %}
+{% endif %}
+
+<div class="tab-pane {{ tabActive }} up-detail" id="{{ navHref }}-{{ index }}">
+    {% set callOutbounds = replayedSessions.sessions[index].CallOutbounds %}
+    <nav>
+        <div class="nav nav-tabs up-detail-nav" role="tablist">
+            <a class="nav-item nav-link active" data-toggle="tab" href="#request-t-resp-{{ index }}"
+               role="tab" aria-controls="request-t-resp-{{ index }}" aria-selected="false">Test Response</a>
+            <a class="nav-item nav-link" data-toggle="tab" href="#request-o-resp-{{ index }}"
+               role="tab" aria-controls="request-o-resp-{{ index }}" aria-selected="false">Online Response</a>
+            <a class="nav-item nav-link" data-toggle="tab" href="#request-t-diff-{{ index }}"
+               role="tab" aria-controls="request-t-diff-{{ index }}" aria-selected="true"
+               onclick="do_diff('request-online-resp-{{ index }}', 'request-test-resp-{{ index }}', 'request-diff-output-{{ index }}')">O == T Diff</a>
+            <a class="nav-item nav-link" data-toggle="tab"
+               href="#request-t-req-{{ index }}" role="tab" aria-controls="request-t-req-{{ index }}"
+               aria-selected="false">Request</a>
+            <a class="nav-item nav-link" data-toggle="tab"
+               href="#request-record-session-{{ index }}" role="tab" aria-controls="request-record-session-{{ index }}"
+               aria-selected="false">Session</a>
+        </div>
+    </nav>
+    <div class="tab-content up-detail-body">
+        <div class="tab-pane fade show active" id="request-t-resp-{{ index }}" role="tabpanel">
+            <div class="card-body">
+                <pre id="request-test-resp-{{ index }}"
+                     class="collapse-soft-break">{{ replayedSessions.sessions[index].Response|e }}</pre>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="request-o-resp-{{ index }}" role="tabpanel">
+            <div class="card-body">
+                <pre id="request-online-resp-{{ index }}"
+                     class="collapse-soft-break">{{ replayedSessions.sessions[index].OnlineResponse|e }}</pre>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="request-t-diff-{{ index }}" role="tabpanel">
+            <div class="card-body" id="request-diff-output-{{ index }}"></div>
+        </div>
+        <div class="tab-pane fade" id="request-t-req-{{ index }}" role="tabpanel">
+            <div class="card-body">
+                <pre class="collapse-soft-break">{{ replayedSessions.sessions[index].Request|e }}</pre>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="request-record-session-{{ index }}" role="tabpanel">
+            <div class="card-body">
+                <pre class="collapse-soft-break">{{ replayedSessions.sessions[index].SessionId|e }}</pre>
+            </div>
+        </div>
+    </div>
+</div>

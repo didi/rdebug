@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phpunit bootstrap="./tests/bootstrap.php"
+    backupGlobals="true"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    stopOnFailure="false">
+    <testsuites>
+        <testsuite name="Midi Test Suite">
+            <directory>tests/Midi</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

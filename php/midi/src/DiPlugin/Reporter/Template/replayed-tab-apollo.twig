@@ -1,0 +1,27 @@
+{% if firstTab == 1 %}
+    {% set tabActive = "active" %}
+{% else %}
+    {% set tabActive = "" %}
+{% endif %}
+
+<div class="tab-pane {{ tabActive }}" id="{{ navHref }}-{{ index }}">
+    <table class="table">
+        <thead class="thead-light">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Toggle</th>
+            <th scope="col">Allow</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set apollos = replayedSessions.sessions[index].Apollos %}
+        {% for apollo in apollos %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ apollo.Toggle|e }}</td>
+                <td>{{ apollo.Allow|e }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
