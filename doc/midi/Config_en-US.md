@@ -33,6 +33,9 @@ mock-files:
     # mock filename content
     # /path/to/need/mock/filename: base64_encode(your-mock-content)
 
+# For DiPlugin Search Command with context
+record-host:
+
 php:
     deploy-path:
     koala-php-ini:
@@ -129,11 +132,17 @@ rdebug
     
     You could set redirect dir from deploy dir to local dir.
 
-- mock-files:
+- mock-files
 
     You could mock file contents.
 
     Key is file path, value is base64_encode of your mock content.
+
+- record-host
+    
+    The recorder machine name.
+     
+    Used by DiPlugin search command, pass the machine name, search for recorded traffic more accurately.
 
 - php
 

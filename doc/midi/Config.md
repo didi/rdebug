@@ -37,6 +37,9 @@ mock-files:
     # mock filename content
     # /path/to/need/mock/filename: base64_encode(your-mock-content)
 
+# For DiPlugin Search Command with context
+record-host:
+
 php:
     deploy-path:
     koala-php-ini:
@@ -155,11 +158,15 @@ rdebug
     
     如果你代码中，有类似 include/require 某线上路径。但本地回放的路径 和 线上路径不一致，把线上和本地的路径映射关系配置到此处。
 
-- mock-files:
+- mock-files
     
     有时候想 Mock 一些文件的内容，Koala 也支持对文件的 Mock。
 
     配置格式是 文件名: base64_encode(mock content).
+
+- record-host
+
+    DiPlugin 插件搜索命令使用，传递机器名，搜索录制的流量更准确
 
 - php
 

@@ -1,9 +1,9 @@
 {
   "name": "rdebug/midi",
-  "description": "A replay client for PHP",
+  "description": "A PHP Replay Client For Rdebug",
   "keywords": ["php", "rdebug", "koala", "replay"],
   "type": "library",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Apache-2.0",
   "config": {
     "secure-http": false,
@@ -45,7 +45,7 @@
       "phpunit/php-code-coverage": [
         {
           "label": "php code coverage patch",
-          "source": "res/patches/php-code-coverage.patch",
+          "source": "php/midi/res/patches/php-code-coverage.patch",
           "version": "^5.3.2",
           "level": "1"
         }

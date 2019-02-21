@@ -8,7 +8,7 @@ Rdebug 是滴滴开源的一款用于 RD 研发、自测、调试的实用工具
 
 鉴于微服务具有易于扩展、部署简单、技术异构性等优点，越来越多的服务都在采用微服务的架构模式。一个复杂的单体服务通常会被拆分成多个小的微服务，当然在享受微服务带来的一系列便利的同时也要接受因为微服务改造带来的问题：需要维护的服务数变多、服务之间 RPC 调用次数增加……
 
-在服务化改造完成之后，原来的单体服务演化成一堆微服务，这就造成线下开发测试环境维护成本大大增加，而手写单测又因复杂的业务逻辑以及复杂的服务调用需要 mock 多个下游服务，导致手写单测成本特别的高。这些都严重影响 RD 的研发效率，并且增加线上发生事故的隐患。
+在服务化改造完成之后，原来的单体服务演化成一堆微服务，这就造成线下开发测试环境维护成本大大增加，其次线下环境涉及到的部门较多，维护一个长期稳定的线下环境也是一个挑战；业务快速发展、需求不断迭代，手写单测又因复杂的业务逻辑以及复杂的服务调用需要 mock 多个下游服务，导致手写单测成本特别的高；手动构造数据，又不够全面真实。以上问题都严重影响 RD 的研发效率，并且增加线上发生事故的隐患。
 
 我们固执地相信这个行业需要一场变革。
 
@@ -46,7 +46,7 @@ $ LD_PRELOAD="/path/to/koala-libc.so /usr/lib64/libcurl.so.4" /path/to/sbin/php-
 
 ### 回放流量
 
-3 种方式回放：下载源码回放、midi.phar 包回放、composer 安装回放。
+回放支持 3 种方式：下载源码回放、midi.phar 包回放、composer bin 回放。
 
 ```shell
 # Source
@@ -61,7 +61,9 @@ $ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi
 $ midi.phar run -f RECORD-SESSION-FILE
 
 # Or, Composer
-# 包即将发布，可通过 composer install 安装 midi 包，使用 vendor/bin/midi 回放
+$ cd /path/to/your/project
+$ composer require rdebug/midi --dev
+$ ./vendor/bin/midi run -f RECORD-SESSION-FILE
 ```
 
 ### PHP 示例
@@ -212,24 +214,24 @@ Koala 也提供一种将流量写入到 elastic 的方式（仅供参考），�
 
 下面介绍最简单的 `-f` 回放，指定录制的文件进行回放：
 
-#### 5.2.1 Midi 源码回放
+#### 5.2.1 回放
 
-```
-$ cd /path/to/your/project
+```Shell
+# Source
 $ /path/to/rdebug/php/midi/bin/midi run -f RECORD-SESSION-FILE
-```
 
-#### 5.2.2 Midi.phar 回放
-
-```
-$ cd /path/to/your/project
-$ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi.phar
+# Or, phar
 $ midi.phar run -f RECORD-SESSION-FILE
+
+# Or, composer vendor bin
+$ ./vendor/bin/midi -f RECORD-SESSION-FILE
 ```
 
-如果执行失败，加上参数 -v、-vv 或 -vvv 查看详细日志。
+更多细节见 [流量回放](#回放流量)
 
-#### 5.2.3 报告
+如果回放失败，加上参数 -v、-vv 或 -vvv 查看详细日志。
+
+#### 5.2.2 报告
 
 参数 `-R`，`-T`，`-C` 等选项，支持生成报告：回放报告、Trace 报告、代码覆盖率报告等。
 

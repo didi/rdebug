@@ -50,7 +50,7 @@ $ LD_PRELOAD="/path/to/koala-libc.so /usr/lib64/libcurl.so.4" /path/to/sbin/php-
 
 ### Traffic Replaying
 
-Three ways to replay: replay from source, replay by midi.phar, composer install midi package and replay by vendor/bin/midi.
+Three ways to replay: replay from source, replay by midi.phar, replay by composer vendor/bin.
 
 ```shell
 # Source
@@ -65,7 +65,9 @@ $ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi
 $ midi.phar run -f RECORD-SESSION-FILE
 
 # Or, Composer
-# midi composer package is coming soon
+$ cd /path/to/your/project
+$ composer require rdebug/midi --dev
+$ ./vendor/bin/midi run -f RECORD-SESSION-FILE
 ```
 
 ### PHP Example
@@ -213,26 +215,26 @@ Koala support writing to Elastic by replacing `KOALA_RECORD_TO_DIR` with `KOALA_
 
 Traffic replaying is to replay recorded traffic in production against non-production environment. You need only to deploy your code w/o deploying downstream services.
 
-Below is a simple example of replaying w/ '-f', which specified the file to replay.
+Below is a simple example of replaying with '-f', which specified the file to replay.
 
-#### 5.2.1 Midi Source
+#### 5.2.1 Replay
 
 ```Shell
-$ cd /path/to/your/project
+# Source
 $ /path/to/rdebug/php/midi/bin/midi run -f RECORD-SESSION-FILE
-```
 
-#### 5.2.2 Midi.phar
-
-```Shell
-$ cd /path/to/your/project
-$ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi.phar
+# Or, phar
 $ midi.phar run -f RECORD-SESSION-FILE
+
+# Or, composer vendor bin
+$ ./vendor/bin/midi -f RECORD-SESSION-FILE
 ```
+
+For more details: [Replay](#traffic-replaying)
 
 Use -v, -vv or -vvv for more verbose log.
 
-#### 5.2.3 Report
+#### 5.2.2 Report
 
 Use `-R`，`-T`，`-C` to generate：Replay report, Trace report, Coverage report
 
