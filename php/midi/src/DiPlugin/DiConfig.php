@@ -39,7 +39,7 @@ final class DiConfig
             }
         }
 
-        if (!empty(Module::MODULE[$moduleName])) {
+        if (!empty(Module::$module[$moduleName])) {
             return true;
         }
         return false;
@@ -61,11 +61,11 @@ final class DiConfig
             throw new Exception("<error>Can not find MODULE_NAME from source.</error>");
         }
 
-        if (!isset(Module::MODULE[$module])) {
+        if (!isset(Module::$module[$module])) {
             throw new Exception("<error>Sorry, not support module $module now.</error>");
         }
 
-        return $moduleConfig = Module::MODULE[$module];
+        return $moduleConfig = Module::$module[$module];
     }
 
     /**
@@ -150,8 +150,8 @@ final class DiConfig
         }
 
         $name = self::getModuleName();
-        if (!empty($name) && isset(Module::MODULE[$name])) {
-            $config = Module::MODULE[$name];
+        if (!empty($name) && isset(Module::$module[$name])) {
+            $config = Module::$module[$name];
             if (!empty($config['record-host'])) {
                 return $config['record-host'];
             }

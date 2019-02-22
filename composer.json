@@ -1,9 +1,9 @@
 {
   "name": "rdebug/midi",
   "description": "A PHP Replay Client For Rdebug",
-  "keywords": ["php", "rdebug", "koala", "replay"],
+  "keywords": ["php", "rdebug", "koala", "replay", "Real Debugger"],
   "type": "library",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "Apache-2.0",
   "config": {
     "secure-http": false,

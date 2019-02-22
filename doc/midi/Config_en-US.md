@@ -33,7 +33,7 @@ mock-files:
     # mock filename content
     # /path/to/need/mock/filename: base64_encode(your-mock-content)
 
-# For DiPlugin Search Command with context
+# Used by DiPlugin's Search Command, search elastic with hostname
 record-host:
 
 php:

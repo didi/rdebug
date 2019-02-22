@@ -210,8 +210,8 @@ class MockDisf
 
         file_put_contents($agent_path . '/service.json', json_encode($service, JSON_PRETTY_PRINT));
 
-        $namejson = Container::make('DiPluginResDir') . DIRECTORY_SEPARATOR . 'disf' . DIRECTORY_SEPARATOR . 'naming.json';
-        copy($namejson, $sWorkPath . DIRECTORY_SEPARATOR . 'naming.json');
+        $namejson = Container::make('DiPluginResDir') . DR . 'disf' . DR . 'naming.json';
+        copy($namejson, $sWorkPath . DR . 'naming.json');
     }
 
     protected static function json2PhpArrayStr($json)

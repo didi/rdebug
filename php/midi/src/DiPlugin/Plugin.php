@@ -67,7 +67,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             return $dir;
         });
 
-        Container::bind('DiPluginResDir', __DIR__ . DR . 'Res');
+        Container::bind('DiPluginResDir', function () {
+            return Container::make('resDir') . DR . 'diplugin';
+        });
     }
 
     /**

@@ -1,7 +1,7 @@
 
 # DiDi Plugin
 
-DiDi Plugin used by our self. Here is an example.
+DiDi Plugin used by our self. Here is an example of how to plugin midi.
 
 We also provide some commands like `search`, which could search session by request uri, response or upstream calls.
 
@@ -18,6 +18,8 @@ DiPlugin 作为插件的一个示例，放在这里供大家参考。因为要�
 ## DiPlugin Private Config
 
 - module-name
+
+- record-host
 
 - enable-disf
 - module-disf-name
