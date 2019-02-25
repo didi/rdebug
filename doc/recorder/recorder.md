@@ -46,7 +46,7 @@ Koala 是一个库，`koala/cmd/recorder/main.go` 是在 Koala 基础上实现�
 
 HTTP、Redis、MySQL、UDP、Thrift 属于网络流量录制，与之类似的，都可以录制。
 
-Apcu 录制，需要对 Apcu 接口进行封装来实现录制，见示例代码 [DEMO](./../../example/php/apcu.php)。
+Apcu 录制，需要对 Apcu 接口进行封装来实现录制上报，见示例代码 [DEMO](./../../example/php/apcu.php)。
 
 ## 五、注意事项
 

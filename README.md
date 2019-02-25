@@ -1,5 +1,8 @@
 <h1 align="center">RDebug - Real Debugger</h1>
 
+[![Gitter](https://badges.gitter.im/didi/rdebug.svg)](https://gitter.im/didi/rdebug?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/didi/rdebug/blob/master/LICENSE)
+
 ## Translation
 
 - [中文](./README_zh_CN.md)

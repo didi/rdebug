@@ -9,7 +9,7 @@ set -x
 # composer global require kherge/box --prefer-source
 
 # Install depends
-source install.sh
+source ./install.sh
 
 config='box.json'
 output='midi.phar'

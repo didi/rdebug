@@ -83,6 +83,8 @@ Example code just curl `http://php.net/get-involved.php`.
 - [Compile koala-libc.so](https://github.com/didi/rdebug#42-compile-koala-libc)
 - [Compile koala-recorder.so](https://github.com/didi/rdebug#43-compile-koala)
 
+If you don't want to compile and record, this example also provide a recorded session [1548160113499755925-1158745](./1548160113499755925-1158745), you could go to [replay session](#replay-session).
+
 ## Start Service
 
 ```
@@ -110,7 +112,7 @@ Recorder support protocol:
 - MySQL
 - Thrift
 - Redis
-- Apcu（Apcu need add a proxy see [demo](./apcu.php)）。
+- Apcu（Apcu need add a uploader see [demo](./apcu.php)）。
 
 ## Access index.php
 

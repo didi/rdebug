@@ -1,5 +1,8 @@
 <h1 align="center">RDebug - Real Debugger</h1>
 
+[![Gitter](https://badges.gitter.im/didi/rdebug.svg)](https://gitter.im/didi/rdebug?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/didi/rdebug/blob/master/LICENSE)
+
 ## 一、简介
 
 Rdebug 是滴滴开源的一款用于 RD 研发、自测、调试的实用工具，可以被用来提升 RD 研发效率、保障代码质量进而减少线上事故。
@@ -69,7 +72,8 @@ $ ./vendor/bin/midi run -f RECORD-SESSION-FILE
 ### PHP 示例
 
 - [PHP 录制和回放](./example/php/README.md)
-- [回放本地文件](./doc/midi/Replay-file.md)
+- [PHP 回放本地文件](./doc/midi/Replay-file.md)
+- [PHP 录制方案](./doc/recorder/recorder.md)
 
 ## 三、技术方案
 
