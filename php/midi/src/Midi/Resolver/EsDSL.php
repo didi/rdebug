@@ -142,8 +142,8 @@ class EsDSL
      */
     public function date($begin, $end)
     {
-        $begin = $begin * 1000 * 1000 * 1000;
-        $end = $end * 1000 * 1000 * 1000;
+        $begin = $begin * 1000000000;
+        $end = $end * 1000000000;
         $this->must[] = ['range' => ['CallFromInbound.OccurredAt' => ['gte' => $begin, 'lt' => $end,]]];
         return $this;
     }

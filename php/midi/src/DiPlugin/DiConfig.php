@@ -1,20 +1,66 @@
 <?php
 
+/**
+ * @author tanmingliang
+ */
+
 namespace DiPlugin;
 
+use Midi\Config;
 use Midi\Container;
 use Midi\Exception\Exception;
 use Symfony\Component\Finder\Finder;
 
+/**
+ * DiDi Plugin Config.
+ *
+ * Store module's config and information, which will used by DiPlugin to auto generate some context for Midi.
+ * So user will no need to config their project at config.yml.
+ */
 final class DiConfig
 {
+
+    /**
+     * Module Information
+     *
+     * value will be lazy init by internal
+     */
+    protected static $module = [
+//        'xxx-module-name' => [
+//            'name'        => 'xxx-module-name',
+//            'disf'        => 'disf!xxx',
+//            'deploy'      => '/path/to/your/deploy/dir',
+//            'log'         => '/path/to/your/log/dir',
+//            'record-host' => 'traffic-recorded-machine-name',
+//            'uri'         => ['/uri',],
+//        ],
+    ];
+
+    /**
+     * Some dependents code deploy path
+     */
+    const DEPLOY_SYSTEM_PATH = '/home/xiaoju/webroot/gulfstream/application/system';
+    const DEPLOY_BIZ_CONFIG_PATH = '/home/xiaoju/webroot/gulfstream/application/biz-config';
+
+    /**
+     * Framework types
+     */
     const CI = 'ci';
     const NUWA = 'nuwa';
+
+    /**
+     * Regex for get module name
+     *
+     * which is defined in code, looks like `define('MODULE_NAME', "xxx");`
+     */
     const PREG_GET_MODULE_NAME = '/\\bdefine\\(\\s*("(?:[^"\\\\]+|\\\\(?:\\\\\\\\)*.)*"|\'(?:[^\'\\\\]+|\\\\(?:\\\\\\\\)*.)*\')\\s*,\\s*("(?:[^"\\\\]+|\\\\(?:\\\\\\\\)*.)*"|\'(?:[^\'\\\\]+|\\\\(?:\\\\\\\\)*.)*\')\\s*\\);/is';
 
     private static $moduleName;
     private static $framework;
 
+    /**
+     * @return Config
+     */
     private static function getMidiConfig()
     {
         static $midiConfig;
@@ -39,7 +85,7 @@ final class DiConfig
             }
         }
 
-        if (!empty(Module::$module[$moduleName])) {
+        if (!empty(self::$module[$moduleName])) {
             return true;
         }
         return false;
@@ -61,11 +107,11 @@ final class DiConfig
             throw new Exception("<error>Can not find MODULE_NAME from source.</error>");
         }
 
-        if (!isset(Module::$module[$module])) {
+        if (!isset(self::$module[$module])) {
             throw new Exception("<error>Sorry, not support module $module now.</error>");
         }
 
-        return $moduleConfig = Module::$module[$module];
+        return $moduleConfig = self::$module[$module];
     }
 
     /**
@@ -90,7 +136,7 @@ final class DiConfig
             $filename = $file->getPathname();
             $contents = file_get_contents($filename);
             if (strpos($contents, 'NUWA_START')) {
-                /* for nuwa */
+                // for nuwa framework
                 $filename = $file->getPath() . '/config/constants.php';
             }
             if ($handle = fopen($filename, "r")) {
@@ -111,6 +157,14 @@ final class DiConfig
         return static::$moduleName = '';
     }
 
+    /**
+     * Get current module framework type
+     *
+     * @return string
+     * @throws Exception
+     * @throws \Midi\Exception\ContainerException
+     * @throws \Midi\Exception\ContainerValueNotFoundException
+     */
     public static function getFramework()
     {
         if (null !== self::$framework) {
@@ -132,16 +186,32 @@ final class DiConfig
         return self::$framework;
     }
 
+    /**
+     * Is Nuwa framework (didi internal framework)
+     * @return bool
+     * @throws Exception
+     */
     public static function isNuwaFramework()
     {
         return self::getFramework() === self::NUWA;
     }
 
+    /**
+     * Is CodeIgniter framework
+     *
+     * @return bool
+     * @throws Exception
+     */
     public static function isCIFramework()
     {
         return self::getFramework() === self::CI;
     }
 
+    /**
+     * Return the hostname of recorded session
+     *
+     * @return |null
+     */
     public static function getRecordHost()
     {
         $host = self::getMidiConfig()->get('record-host');
@@ -150,8 +220,8 @@ final class DiConfig
         }
 
         $name = self::getModuleName();
-        if (!empty($name) && isset(Module::$module[$name])) {
-            $config = Module::$module[$name];
+        if (!empty($name) && isset(self::$module[$name])) {
+            $config = self::$module[$name];
             if (!empty($config['record-host'])) {
                 return $config['record-host'];
             }
@@ -160,6 +230,13 @@ final class DiConfig
         return null;
     }
 
+    /**
+     * Return disf name of module
+     *
+     * @param string $moduleName
+     * @return mixed|string
+     * @throws Exception
+     */
     public static function getModuleDisfName($moduleName = null)
     {
         // local config have high priority
@@ -176,6 +253,13 @@ final class DiConfig
         return $config['disf'] ?? '';
     }
 
+    /**
+     * Return the url of get module's recommend dsl
+     *
+     * @param string $moduleName
+     * @return string
+     * @throws Exception
+     */
     public static function getRecommendDSLUrl($moduleName = null)
     {
         if ($moduleName == null) {
@@ -188,5 +272,51 @@ final class DiConfig
             $url = self::getMidiConfig()->get('php', 'recommend-dsl-url');
         }
         return $url . $moduleName;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getModule()
+    {
+        return self::$module;
+    }
+
+    /**
+     * @param array $module
+     */
+    public static function setModule(array $module)
+    {
+        self::$module = $module;
+    }
+
+    /**
+     * copy \DiPlugin\DiConfig to \Midi\Config
+     *
+     * @param Config $config
+     * @return Config
+     */
+    public static function copy2MidiConfig(Config $config)
+    {
+        if (!self::isExistModuleConfig()) {
+            return $config;
+        }
+
+        $phpConfig = [];
+        $module = self::getModuleConfig();
+        if (empty($config->get('php', 'deploy-path')) && !empty($module['deploy'])) {
+            $phpConfig['deploy-path'] = $module['deploy'];
+        }
+        if (empty($config->get('php', 'module-name')) && !empty($module['name'])) {
+            $phpConfig['module-name'] = $module['name'];
+        }
+        if (empty($config->get('php', 'module-disf-name')) && !empty($module['disf'])) {
+            $phpConfig['module-disf-name'] = $module['disf'];
+        }
+        $config->merge([
+            'php' => $phpConfig,
+        ]);
+
+        return $config;
     }
 }

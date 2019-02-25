@@ -33,6 +33,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
@@ -66,7 +67,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             }
             return $dir;
         });
-
         Container::bind('DiPluginResDir', function () {
             return Container::make('resDir') . DR . 'diplugin';
         });
@@ -99,15 +99,24 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         PreKoalaCheck::checkProjectDir();
         PreKoalaCheck::checkPhpExt();
 
-        // generate Disf file, mock Disf
-        $command = $event->getCommand('init');
+        /**
+         * didi internal: generate & mock disf file
+         *
+         * @see \DiPlugin\Command\InitCommand::execute
+         */
+        try {
+            $command = $event->getCommand('init');
+        } catch (CommandNotFoundException $e) {
+            self::$output->writeln("<comment>Can find init command: `DiPlugin\Command\InitCommand`, mock disf will not work!</comment>");
+            return ;
+        }
         $command->run(new ArrayInput(['--increase' => 1,]), $event->getOutput());
     }
 
     /**
      * Before command run
      *
-     * 1. run & search command: uploader replayed data by @param PreCommandEvent $event
+     * 1. run & search command: uploader will upload replayed data by @param PreCommandEvent $event
      * @see BaseMate::collect
      *
      */
@@ -174,6 +183,9 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             ]);
         }
 
+        // copy \DiPlugin\DiConfig to \Midi\Config
+        DiConfig::copy2MidiConfig($config);
+
         $input = $event->getInput();
         if (DiConfig::isCIFramework()) {
             FixCI::fix();
@@ -181,13 +193,34 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
         // php code coverage
         if ($input->getOptions('coverage') && $module = DiConfig::getModuleName()) {
-            if (DiConfig::isCIFramework()) {
+            // DiPlugin maybe have module dist, if exist and use it
+            $isCI = DiConfig::isCIFramework();
+            $dir = Container::make('DiPluginResDir') . DR . 'coverage';
+            $dist = $dir . DR . $module . '.xml.dist';
+            if (file_exists($dist)) {
+                Coverage::setPhpUnitDist($dist);
+                if (!$isCI) {
+                    // Nuwa framework copy original dist, and replace to local path
+                    // Because nuwa coverage data are local path, but dist are deploy path
+                    // If not replace, data will be filter by deploy path and get empty coverage data
+                    $midiDist = Container::make('workingDir') . DR . '.midi' . DR . Coverage::DIST;
+                    if (!file_exists($midiDist)) {
+                        // if not exist just copy or keep
+                        $content = file_get_contents($dist);
+                        $redirectDir = $config->get('redirect-dir');
+                        if (is_array($redirectDir) && count($redirectDir)) {
+                            foreach ($redirectDir as $from => $to) {
+                                $content = str_replace($from, $to, $content);
+                            }
+                        }
+                        file_put_contents($midiDist, $content);
+                        Coverage::setPhpUnitDist($midiDist);
+                    }
+                }
+            }
+            if ($isCI) {
                 // CI framework add autoloader rules
                 Coverage::setTemplate(Coverage::getTemplate() . Reporter\Reporter::$coverageCIAppendCode);
-            }
-            $dir = Container::make('DiPluginResDir') . DR . 'coverage';
-            if (file_exists($dir . DR . $module . '.xml.dist')) {
-                Coverage::setPhpUnitDist($dir . DR . $module . '.xml.dist');
             }
         }
     }

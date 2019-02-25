@@ -11,9 +11,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class BM
 {
-    const START_REPLAYER = 'Start replayer';
-    const RESOLVE_SESSIONS = 'Resolve sessions';
-    const REPLAYED_SESSION = 'Replayed session';
+    const START_REPLAYER = 'Start Replayer';
+    const RESOLVE_SESSIONS = 'Resolve Sessions';
+    const REPLAYED_SESSION = 'Replayed Session';
 
     /** @var Stopwatch */
     private static $stopWatch;

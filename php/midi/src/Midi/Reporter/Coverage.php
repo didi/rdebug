@@ -73,6 +73,7 @@ CODE;
      */
     public static function buildPatch($sessionId)
     {
+        // $code is a template, every replaying session will replace SESSION-ID to real session id
         static $code;
         if ($code) {
             if (empty($code)) {
@@ -85,23 +86,9 @@ CODE;
             return $code = '';
         }
 
-        if (self::$dist !== null && file_exists(self::$dist)) {
-            $dist = self::$dist;
-        } else {
-            // check working dir
-            $workingDir = Container::make('workingDir');
-            $dist = $workingDir . DR . self::DIST;
-            if (!file_exists($dist)) {
-                $preDist = $dist;
-                $dist = $workingDir . DR . '.midi' . DR . self::DIST;
-                if (!file_exists($dist)) {
-                    self::$output->writeln("<info>Can not find phpunit.xml.dist file: 
-<comment>$preDist</comment>
-<comment>$dist</comment>. 
-Coverage will not work.</info>");
-                    return $code = '';
-                }
-            }
+        $dist = self::getPhpUnitDist();
+        if ($dist === false) {
+            return $code = '';
         }
 
         try {
@@ -117,10 +104,10 @@ include_once('$autoloader');
 
 CODE;
 
-        $collect = self::getCollectFile();
+        $collect = self::getCoverageDataFile();
         self::$template = str_replace('PROJECT-XML-DIST', $dist, self::$template);
         self::$template = str_replace('COVERAGE-LOG', $collect, self::$template);
-        $code .= self::$template; // $code is a template
+        $code .= self::$template;
         $code .= <<<CODE
 ?>
 CODE;
@@ -142,17 +129,43 @@ CODE;
         if (is_string($phpunitDist) && file_exists($phpunitDist)) {
             self::initFromUnitDist($coverage, $phpunitDist);
         }
-
-        $coverage->setProcessUncoveredFilesFromWhitelist(false);
         $coverage->start($id);
         register_shutdown_function([$coverage, 'stopSaveToFile'], $outputFile);
 
         return $coverage;
     }
 
+    /**
+     * Set phpunit.xml.dist path
+     *
+     * @param string $dist path of phpunit.xml.dist
+     */
     public static function setPhpUnitDist($dist)
     {
         self::$dist = $dist;
+    }
+
+    protected static function getPhpUnitDist()
+    {
+        if (self::$dist !== null && file_exists(self::$dist)) {
+            return self::$dist;
+        } else {
+            // check working dir
+            $workingDir = Container::make('workingDir');
+            $dist = $workingDir . DR . self::DIST;
+            if (!file_exists($dist)) {
+                $preDist = $dist;
+                $dist = $workingDir . DR . '.midi' . DR . self::DIST;
+                if (!file_exists($dist)) {
+                    self::$output->writeln("<info>Can not find phpunit.xml.dist file at: 
+<comment>$preDist</comment>
+<comment>$dist</comment> 
+Code Coverage will not work.</info>");
+                    return false;
+                }
+            }
+            return $dist;
+        }
     }
 
     /**
@@ -193,19 +206,30 @@ CODE;
      * @throws RuntimeException
      * @throws \Midi\Exception\ContainerException
      * @throws \Midi\Exception\ContainerValueNotFoundException
+     * @return string return path of html report
      */
     public static function renderHTML($open)
     {
-        $file = self::getCollectFile();
+        $file = self::getCoverageDataFile();
         if (!self::$enable || !file_exists($file)) {
             return null;
         }
 
+        // if online deploy path (session recorded path) different with local replaying path
+        // replace deploy path to local replaying path, or will get empty report
+        /** @var \Midi\Config $config */
+        $config = Container::make('config');
         $workingDir = Container::make('workingDir');
-        $deployDir = Container::make('config')->get('php', 'deploy-path');
-        if (!empty($deployDir) && $workingDir !== $deployDir) {
+        $redirectDir = $config->get('redirect-dir');
+        $deployDir = $config->get('php', 'deploy-path');
+        if (!empty($deployDir) && $deployDir !== $workingDir) {
+            $redirectDir[$deployDir] = $workingDir;
+        }
+        if (count($redirectDir)) {
             $data = file_get_contents($file);
-            $data = str_replace(str_replace('/', '\/', $deployDir), str_replace('/', '\/', $workingDir), $data);
+            foreach ($redirectDir as $from => $to) {
+                $data = str_replace(str_replace('/', '\/', $from), str_replace('/', '\/', $to), $data);
+            }
             file_put_contents($file, $data);
         }
 
@@ -240,7 +264,15 @@ CODE;
         return self::$template;
     }
 
-    public static function getCollectFile()
+    /**
+     * Code Coverage Data File
+     *
+     * @throws RuntimeException
+     * @throws \Midi\Exception\ContainerException
+     * @throws \Midi\Exception\ContainerValueNotFoundException
+     * @return string return the file of coverage data
+     */
+    public static function getCoverageDataFile()
     {
         static $file;
         if ($file) {

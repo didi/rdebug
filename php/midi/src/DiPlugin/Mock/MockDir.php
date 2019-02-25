@@ -7,7 +7,6 @@
 namespace DiPlugin\Mock;
 
 use DiPlugin\DiConfig;
-use DiPlugin\Module;
 use Midi\Container;
 
 /**
@@ -29,11 +28,11 @@ class MockDir
         $moduleConfig = DiConfig::getModuleConfig();
 
         $default = [
-            $moduleConfig['deploy']        => $cwd,
-            $moduleConfig['log']           => $logDir,
-            Module::DEPLOY_SYSTEM_PATH     => $ciSystemDir,
-            Module::DEPLOY_BIZ_CONFIG_PATH => $bizConfigDir,
-            '/home/xiaoju/.services/disf'  => $cwd . '/__naming__',
+            $moduleConfig['deploy']          => $cwd,
+            $moduleConfig['log']             => $logDir,
+            DiConfig::DEPLOY_SYSTEM_PATH     => $ciSystemDir,
+            DiConfig::DEPLOY_BIZ_CONFIG_PATH => $bizConfigDir,
+            '/home/xiaoju/.services/disf'    => $cwd . '/__naming__',
         ];
 
         // fix for fastdev2.0 ln -s /home/xiaoju to /Users/didi/xiaoju
@@ -64,10 +63,10 @@ class MockDir
         if (!is_dir($fastDev2System)) {
             $fastDev2System = $ciSystemDir;
         }
-        $default[Module::DEPLOY_SYSTEM_PATH] = $fastDev2System;
+        $default[DiConfig::DEPLOY_SYSTEM_PATH] = $fastDev2System;
 
         $fastDev2BizConfigDir = '/Users/didi/xiaoju/webroot/gulfstream/application/biz-config';
-        $default[Module::DEPLOY_BIZ_CONFIG_PATH] = $fastDev2BizConfigDir;
+        $default[DiConfig::DEPLOY_BIZ_CONFIG_PATH] = $fastDev2BizConfigDir;
 
         return $default;
     }
