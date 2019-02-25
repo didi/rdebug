@@ -172,7 +172,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         $config = $event->getMidi()->getConfig();
 
-        // add mock dirs and inject codes
+        // Copy \DiPlugin\DiConfig to \Midi\Config, must be before MockDir::getRedirectDir
+        DiConfig::copy2MidiConfig($config);
+
+        // Add mock dirs and inject codes
         $redirectDir = MockDir::getRedirectDir();
         if (!empty($redirectDir)) {
             $config->merge([
@@ -183,16 +186,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
             ]);
         }
 
-        // copy \DiPlugin\DiConfig to \Midi\Config
-        DiConfig::copy2MidiConfig($config);
-
         $input = $event->getInput();
         if (DiConfig::isCIFramework()) {
             FixCI::fix();
         }
 
         // php code coverage
-        if ($input->getOptions('coverage') && $module = DiConfig::getModuleName()) {
+        if ($input->getOption('coverage') && $module = DiConfig::getModuleName()) {
             // DiPlugin maybe have module dist, if exist and use it
             $isCI = DiConfig::isCIFramework();
             $dir = Container::make('DiPluginResDir') . DR . 'coverage';
@@ -244,7 +244,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 $requestTime = date('Y-m-d H:i:s', intval($occurAt / 1000000000));
                 self::$output->writeln("<info>Request Time: <comment>$requestTime</comment></info>");
                 self::$output->writeln("<info>Request:\n<comment>" . $parsedInbound['Req'] . "</comment></info>");
-                // TODO PATCH Ba_Mai
             }
         }
     }

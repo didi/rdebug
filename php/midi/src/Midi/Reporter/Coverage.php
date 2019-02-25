@@ -91,22 +91,26 @@ CODE;
             return $code = '';
         }
 
-        try {
-            $reflect = new ReflectionClass('Composer\Autoload\ClassLoader');
-        } catch (\ReflectionException $e) {
-            self::$output->writeln("<info>Can not find autoload file, Coverage will not work.</info>");
-            return $code = '';
+        if (\defined('MIDI_COMPOSER_AUTOLOAD')) {
+            $autoloader = constant('MIDI_COMPOSER_AUTOLOAD');
+        } else {
+            try {
+                $reflect = new ReflectionClass('Composer\Autoload\ClassLoader');
+            } catch (\ReflectionException $e) {
+                self::$output->writeln("<info>Can not find autoload file, Coverage will not work.</info>");
+                return $code = '';
+            }
+            $autoloader = dirname($reflect->getFileName()) . '/../autoload.php';
         }
-        $autoloader = dirname($reflect->getFileName()) . '/../autoload.php';
+
+        self::$template = str_replace('PROJECT-XML-DIST', $dist, self::$template);
+        self::$template = str_replace('COVERAGE-LOG', self::getCoverageDataFile(), self::$template);
+
         $code = <<<CODE
 <?php
 include_once('$autoloader');
 
 CODE;
-
-        $collect = self::getCoverageDataFile();
-        self::$template = str_replace('PROJECT-XML-DIST', $dist, self::$template);
-        self::$template = str_replace('COVERAGE-LOG', $collect, self::$template);
         $code .= self::$template;
         $code .= <<<CODE
 ?>

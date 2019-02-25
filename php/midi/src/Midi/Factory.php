@@ -26,6 +26,8 @@ final class Factory
 {
 
     /**
+     * Create Application.
+     *
      * @param $autoloader
      * @param string|Config $config
      * @return Application
@@ -39,6 +41,8 @@ final class Factory
     }
 
     /**
+     * Create Midi.
+     *
      * @param ClassLoader $autoloader
      * @param string|Config $config
      * @return Midi
@@ -46,7 +50,7 @@ final class Factory
      * @throws Exception\ContainerValueNotFoundException
      * @throws RuntimeException
      */
-    protected static function createMidi(ClassLoader $autoloader, $config = null)
+    public static function createMidi(ClassLoader $autoloader, $config = null)
     {
         static $midi;
         if ($midi instanceof Midi) {

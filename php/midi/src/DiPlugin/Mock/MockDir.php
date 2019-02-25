@@ -10,7 +10,7 @@ use DiPlugin\DiConfig;
 use Midi\Container;
 
 /**
- * For ease of use, we auto generate project's mock dirs if project had config in @see \DiPlugin\Module
+ * For ease of use, we auto generate project's mock dirs if project had config in @see \DiPlugin\DiConfig
  */
 class MockDir
 {
@@ -26,17 +26,25 @@ class MockDir
         $bizConfigDir = Container::make('bizConfigDir');
         $ciSystemDir = Container::make('ciSystemDir');
         $moduleConfig = DiConfig::getModuleConfig();
+        /** @var \Midi\Config $config */
+        $config = Container::make('config');
 
         $default = [
-            $moduleConfig['deploy']          => $cwd,
-            $moduleConfig['log']             => $logDir,
             DiConfig::DEPLOY_SYSTEM_PATH     => $ciSystemDir,
             DiConfig::DEPLOY_BIZ_CONFIG_PATH => $bizConfigDir,
             '/home/xiaoju/.services/disf'    => $cwd . '/__naming__',
         ];
 
+        $deployPath = $config->get('php', 'deploy-path');
+        if (!empty($deployPath)) {
+            $default[$deployPath] = $cwd;
+        }
+        if (!empty($moduleConfig['log'])) {
+            $default[$moduleConfig['log']] = $logDir;
+        }
+
         // fix for fastdev2.0 ln -s /home/xiaoju to /Users/didi/xiaoju
-        $fastDev2deploy = str_replace('/home/xiaoju/', '/Users/didi/xiaoju/', $moduleConfig['deploy']);
+        $fastDev2deploy = str_replace('/home/xiaoju/', '/Users/didi/xiaoju/', $deployPath);
         if (strpos($fastDev2deploy, $cwd) !== false) {
             // at fastdev2.0 path
             return self::fixForFastdev2($moduleConfig, $logDir, $ciSystemDir, $fastDev2deploy, $cwd);
