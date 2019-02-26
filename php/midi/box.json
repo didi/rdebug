@@ -4,7 +4,7 @@
     "src/Midi",
     "res"
   ],
-  "files": ["version.txt", "LICENSE", "CHANGELOG.md", "README.md", "src/bootstrap.php"],
+  "files": ["version.txt", "version-dev.txt", "LICENSE", "CHANGELOG.md", "README.md", "src/bootstrap.php"],
   "finder": [
     {
       "name": "*.php",

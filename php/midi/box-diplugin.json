@@ -4,7 +4,7 @@
     "src",
     "res"
   ],
-  "files": ["version.txt", "LICENSE", "CHANGELOG.md", "README.md"],
+  "files": ["version.txt", "version-dev.txt", "LICENSE", "CHANGELOG.md", "README.md"],
   "finder": [
     {
       "name": "*.php",
