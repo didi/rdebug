@@ -97,8 +97,8 @@ class UpdateCommand extends Command
         }
 
         $latestVersion = (string)$this->getLatestVersion($output, $versionTxtUlr);
+        $curVersion = (string)$this->getCurrentVersion();
 
-        $curVersion = Application::getMidiVersion();
         if (version_compare($curVersion, $latestVersion) >= 0) {
             $output->writeln("<info>BRAVO!!! You are using the latest midi version $curVersion</info>");
             return;
@@ -152,6 +152,18 @@ class UpdateCommand extends Command
         }
 
         return $resp->getBody();
+    }
+
+    /**
+     * Get current application version.
+     *
+     * @return string
+     * @throws \Midi\Exception\ContainerException
+     * @throws \Midi\Exception\ContainerValueNotFoundException
+     */
+    protected function getCurrentVersion()
+    {
+        return Application::getMidiVersion();
     }
 
     /**
