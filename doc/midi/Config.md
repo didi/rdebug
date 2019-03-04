@@ -74,6 +74,7 @@ php:
     enable-uploader: 1
     uploader-url:
     recommend-dsl-url:
+    sync-module-url:
 ```
 
 ## 配置注解
@@ -269,5 +270,9 @@ rdebug
     - recommend-dsl-url
     
         DiPlugin 私有属性，获取 Nuwa 平台推荐的 Session 的 Url，可以忽略这个选项。
+       
+    - sync-module-url
+    
+        DiPlugin 私有属性，通过这个 Url 同步模块配置。
 
 

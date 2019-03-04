@@ -67,6 +67,7 @@ php:
     enable-uploader: 1
     uploader-url:
     recommend-dsl-url:
+    sync-module-url: 
 ```
 
 - `rdebug-dir`
@@ -227,4 +228,8 @@ rdebug
     - recommend-dsl-url
 
         DiPlugin private config.
+        
+    - sync-module-url
+        
+        DiPlugin private config. Use this url to sync module config.
 

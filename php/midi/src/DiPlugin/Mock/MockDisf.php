@@ -337,7 +337,7 @@ HHHHH;
      */
     protected static function getDisf($increase)
     {
-        $disfConfigFile = Container::make('workingDir') . '/.midi/__disf.json';
+        $disfConfigFile = Container::make('midiWorkingDir') . '/__disf.json';
         FileUtil::createFile($disfConfigFile);
 
         try {
@@ -378,7 +378,7 @@ HHHHH;
         $disf['v_midi'] = Application::getMidiVersion();
         $disf['m_time'] = filemtime(Container::make('workingDir'));
 
-        $disfFile = Container::make('workingDir') . '/.midi/__disf.json';
+        $disfFile = Container::make('midiWorkingDir') . '/__disf.json';
         file_put_contents($disfFile, json_encode($disf, JSON_PRETTY_PRINT));
         Container::make('output')->writeln('<info>Build: <comment>' . $disfFile . '</comment></info>');
     }

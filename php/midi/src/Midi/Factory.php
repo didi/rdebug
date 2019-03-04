@@ -330,8 +330,10 @@ final class Factory
         self::createDir($rdebugDir);
         Container::bind('rdebugDir', $rdebugDir);
         Container::bind('workingDir', getcwd());
+        Container::bind('midiWorkingDir', function () {
+            return self::createDir(Container::make('workingDir') . DR . Config::MIDI_WORKING_DIR);
+        });
         Container::bind('rootDir', ROOT_PATH . '/');
-
         Container::bind('resDir', ROOT_PATH . '/res');
         Container::bind('templateDir', function () {
             return Container::make('resDir') . '/template/report';
@@ -345,14 +347,14 @@ final class Factory
          *   - res
          *     - replayer
          *     - depends
-         *     - static
          *   - session
-         *   - mock
          *   - log
          *   - upgrade
          *   - report
          *     - coverage
          *     - trace
+         *         - tmp
+         *     - static
          */
         Container::bind('toolResDir', function () use ($rdebugDir) {
             return self::createDir($rdebugDir . DR . 'res');
@@ -365,9 +367,6 @@ final class Factory
         });
         Container::bind('sessionDir', function () use ($rdebugDir) {
             return self::createDir($rdebugDir . DR . 'session');
-        });
-        Container::bind('mockDir', function () use ($rdebugDir) {
-            return self::createDir($rdebugDir . DR . 'mock');
         });
         Container::bind('logDir', function () use ($rdebugDir) {
             return self::createDir($rdebugDir . DR . 'log');

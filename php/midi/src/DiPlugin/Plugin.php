@@ -70,6 +70,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         Container::bind('DiPluginResDir', function () {
             return Container::make('resDir') . DR . 'diplugin';
         });
+
+        DiConfig::dailySyncModuleConfig();
     }
 
     /**
@@ -203,7 +205,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                     // Nuwa framework copy original dist, and replace to local path
                     // Because nuwa coverage data are local path, but dist are deploy path
                     // If not replace, data will be filter by deploy path and get empty coverage data
-                    $midiDist = Container::make('workingDir') . DR . '.midi' . DR . Coverage::DIST;
+                    $midiDist = Container::make('midiWorkingDir') . DR . Coverage::DIST;
                     if (!file_exists($midiDist)) {
                         // if not exist just copy or keep
                         $content = file_get_contents($dist);

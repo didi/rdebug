@@ -9,6 +9,9 @@ namespace DiPlugin;
 use Midi\Config;
 use Midi\Container;
 use Midi\Exception\Exception;
+use GuzzleHttp\Client;
+use GuzzleHttp\Promise;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -19,11 +22,13 @@ use Symfony\Component\Finder\Finder;
  */
 final class DiConfig
 {
+    const MODULE_CACHE_TIME = 43200;
+    const SYNC_TIMEOUT = 2;
 
     /**
      * Module Information
      *
-     * value will be lazy init by internal
+     * value will be lazy init by internal and update by cloud
      */
     protected static $module = [
 //        'xxx-module-name' => [
@@ -291,6 +296,29 @@ final class DiConfig
     }
 
     /**
+     * @param array $module
+     */
+    public static function updateModule(array $module)
+    {
+        foreach ($module as $name => $configs) {
+            if (isset(self::$module[$name])) {
+                foreach ($configs as $key => $value) {
+                    if ($key === 'uri') {
+                        if (!is_array($value)) {
+                            $value = [$value,];
+                        }
+                        self::$module[$name][$key] = array_unique(self::$module[$name][$key], $value);
+                    } else {
+                        self::$module[$name][$key] = $value;
+                    }
+                }
+            } else {
+                self::$module[$name] = $configs;
+            }
+        }
+    }
+
+    /**
      * copy \DiPlugin\DiConfig to \Midi\Config
      *
      * @param Config $config
@@ -318,5 +346,96 @@ final class DiConfig
         ]);
 
         return $config;
+    }
+
+    /**
+     * Sync Module Config from `sync-module-url`
+     */
+    public static function dailySyncModuleConfig()
+    {
+        $config = self::getMidiConfig();
+        $syncUrl = $config->get('php', 'sync-module-url');
+        if (empty($syncUrl)) {
+            return false;
+        }
+
+        $module = Container::make('dependsDir') . DR . 'module.php';
+        if (file_exists($module) && (time() - filemtime($module)) < self::MODULE_CACHE_TIME) {
+            $config = include $module;
+            if (!empty($config)) {
+                self::updateModule($config);
+                return true;
+            }
+            return false;
+        }
+
+        /** @var OutputInterface $output */
+        $output = Container::make('output');
+        $client = new Client();
+        $res = $client->request('GET', $syncUrl, ['timeout' => self::SYNC_TIMEOUT,]);
+        if ($res->getStatusCode() !== 200) {
+            $output->writeln("Sync module information from $syncUrl fail!", OutputInterface::VERBOSITY_VERBOSE);
+            return false;
+        }
+        try {
+            $resp = \GuzzleHttp\json_decode($res->getBody(), true);
+        } catch (\exception $e) {
+            $output->writeln("Sync module information from $syncUrl, response invalid json!", OutputInterface::VERBOSITY_VERBOSE);
+            return false;
+        }
+
+        /**
+         * {
+         *     'data': [
+         *         {"name": "", 'data': "[{key:..., value:...}, {key:..., value:...,}]"},
+         *     ],
+         *     'errmsg': 'success',
+         *     'errno': 0,
+         *     'total': 10,
+         * }
+         */
+        if (!isset($resp['errno']) || $resp['errno'] !== 0) {
+            $output->writeln("Sync module information from $syncUrl fail, error message: {$resp['errmsg']}!", OutputInterface::VERBOSITY_VERBOSE);
+            return false;
+        }
+
+        $syncConfig = [];
+        if ($resp['total'] > 0) {
+            foreach ($resp['data'] as $row) {
+                $moduleName = $row['name'];
+                try {
+                    $configs = \GuzzleHttp\json_decode($row['data'], true);
+                } catch (\exception $e) {
+                    continue;
+                }
+                $moduleConfig = [];
+                foreach ($configs as $config) {
+                    $key = $config['key'];
+                    $value = $config['value'];
+                    if ($key === 'language' && $value !== 'php') {
+                        continue 2;
+                    }
+                    switch ($key) {
+                        case "deploy":
+                        case "framework":
+                            $moduleConfig[$key] = $value;
+                            break;
+                        case "context":
+                            $moduleConfig['record-host'] = $value;
+                            break;
+                    }
+                }
+                if (count($moduleConfig)) {
+                    $moduleConfig['name'] = $moduleName;
+                    $syncConfig[$moduleName]  = $moduleConfig;
+                }
+            }
+            if (count($syncConfig)) {
+                self::updateModule($syncConfig);
+                file_put_contents($module, '<?php return '.var_export($syncConfig, true ).";\n");
+                return true;
+            }
+        }
+        return false;
     }
 }

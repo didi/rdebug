@@ -205,8 +205,7 @@ class ReplayerCommand extends BaseCommand
 
     public static function prepareStaticFiles()
     {
-        $reportDir = Container::make('reportDir');
-        $staticTmpDir = $reportDir . DR . 'static';
+        $staticTmpDir = Container::make('reportDir') . DR . 'static';
         if (!is_dir($staticTmpDir)) {
             $static = Container::make('templateDir') . DR . 'static';
             FileUtil::copyDir($static, $staticTmpDir);

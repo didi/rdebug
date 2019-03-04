@@ -88,14 +88,13 @@ class Application extends BaseApplication
             return;
         }
 
-        $config = $this->midi->getConfig();
-        $this->registerCustomCommands($config);
-        $this->registerPlugins($config, $input, $output);
-
         Container::bind('app', $this);
         Container::bind('input', $input);
         Container::bind('output', $output);
 
+        $config = $this->midi->getConfig();
+        $this->registerCustomCommands($config);
+        $this->registerPlugins($config, $input, $output);
         $this->isInitialized = true;
     }
 

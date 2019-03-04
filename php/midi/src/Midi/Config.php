@@ -12,9 +12,10 @@ use Symfony\Component\Yaml\Yaml;
 class Config
 {
 
-    const MIDI_CONFIG_DIR = '.midi';
+    const MIDI_WORKING_DIR = '.midi';
+    const MIDI_CONFIG_DIR = self::MIDI_WORKING_DIR;
     const MIDI_CONFIG_FILE = 'config.yml';
-    const KOALA_PREPEND_FILE = 'prepend.php';
+    const KOALA_PREPEND_FILE = '_internal_auto_prepend.php';
 
     /**
      * @var array
@@ -130,6 +131,10 @@ class Config
             return $code = '';
         }
 
+        if ($inject === $this->getPrependFile()) {
+            throw new \Error("Filename $inject is internal use only, please change your inject filename");
+        }
+
         if (is_string($inject)) {
             $inject = [$inject,];
         }
@@ -150,6 +155,6 @@ class Config
      */
     public function getPrependFile()
     {
-        return Container::make('mockDir') . DR . self::KOALA_PREPEND_FILE;
+        return Container::make('midiWorkingDir') . DR . self::KOALA_PREPEND_FILE;
     }
 }

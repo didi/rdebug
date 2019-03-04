@@ -1,5 +1,8 @@
 /koala/vendor
 /php/midi/vendor
+/php/midi/composer.json
+/php/midi/composer.lock
 /koala/.idea
+/koala/glide.lock
 /koala-libc/.idea
 .idea
