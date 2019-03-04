@@ -90,7 +90,7 @@ We are using real production traffic to test on non-production environment. So, 
 
   Replaying recorded production traffic against non-production environment, mock downstream traffic based on traffic matching. The most difficult part is interception and traffic matching.
 
-![koala-midi](./doc/images/koala-midi.png)
+![koala-midi](./doc/images/koala-midi-en-US.jpg)
 
 ### 3.1 Koala & Koala-libc
 

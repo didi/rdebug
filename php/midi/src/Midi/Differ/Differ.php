@@ -192,7 +192,7 @@ class Differ implements DifferInterface
         $aTmpBody = json_decode($aResp[1], true);
         if (JSON_ERROR_NONE !== json_last_error()) {
             // for jsonp
-            if (preg_match('~^[\s]*(\w+)({.*})(.*)$~', $aResp[1], $matches)) {
+            if (preg_match('~^[\s]*(\w+)\(({.*})\)(.*)$~', $aResp[1], $matches)) {
                 if ('' != $matches[1]) {
                     $this->jsonpWrapper[] = [$matches[1], $matches[3]];
                 } else {

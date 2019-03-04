@@ -60,17 +60,22 @@ class EsDSL
      */
     public function dsl()
     {
-        return [
+        $ret = [
             'size'  => $this->size,
             'from'  => $this->from,
             'sort'  => $this->sort,
             'query' => [
                 'bool' => [
-                    'must'     => $this->must,
-                    'must_not' => $this->notMust,
+                    'must' => $this->must,
                 ],
             ],
         ];
+
+        if (!empty($this->notMust)) {
+            $ret['query']['bool']['must_not'] = $this->notMust;
+        }
+
+        return $ret;
     }
 
     public function size($size)

@@ -10,7 +10,6 @@ use Midi\Config;
 use Midi\Container;
 use Midi\Exception\Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Promise;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 

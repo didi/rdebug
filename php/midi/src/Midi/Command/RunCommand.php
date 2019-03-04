@@ -159,6 +159,8 @@ class RunCommand extends BaseCommand
 
             $progress = Util::getProgressBarObj($replaySessionCount);
             foreach ($sessions as $replayingSession) {
+                $progress->advance();
+                $output->writeln('');
                 try {
                     $replayedSession = $this->koala->replay($replayingSession);
                     $this->doAnalysis($replayingSession, $replayedSession);
@@ -168,8 +170,6 @@ class RunCommand extends BaseCommand
                         break;
                     }
                 }
-                $progress->advance();
-                $output->writeln(PHP_EOL);
             }
 
             $this->doSummary($replaySessionCount);
