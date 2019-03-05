@@ -53,17 +53,24 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         /**
          * For ci system 和 biz-config
          *
-         * 目录是和 业务模块平级
+         * 这两个公用的目录是和 业务模块平级(macOS本地) OR `./../../xxx` (模块线上路径) 上两级
          *
          * CI 框架的项目 如果没有 system ，将 git clone 到 res/depends/ciSystem
          */
         Container::bind('bizConfigDir', function () {
-            return dirname(Container::make('workingDir')) . '/biz-config';
+            $dir = dirname(Container::make('workingDir')) . '/biz-config';
+            if (!is_dir($dir)) {
+                return dirname(dirname(Container::make('workingDir'))) . '/biz-config';
+            }
+            return $dir;
         });
         Container::bind('ciSystemDir', function () {
             $dir = dirname(Container::make('workingDir')) . '/system';
             if (!is_dir($dir)) {
-                return Container::make('dependsDir') . DR . 'ciSystem';
+                $dir = dirname(dirname(Container::make('workingDir'))) . '/system';
+                if (!is_dir($dir)) {
+                    return Container::make('dependsDir') . DR . 'ciSystem';
+                }
             }
             return $dir;
         });

@@ -11,6 +11,9 @@ use Midi\Container;
 
 /**
  * For ease of use, we auto generate project's mock dirs if project had config in @see \DiPlugin\DiConfig
+ *
+ * 根据模块配置信息，自动帮业务模块生成目录重定向，这样就不需要手动给每个模块配置 config.yml
+ * 否则，在模块目录下手写 .midi/config.yml
  */
 class MockDir
 {
@@ -30,11 +33,14 @@ class MockDir
         $config = Container::make('config');
 
         $default = [
-            DiConfig::DEPLOY_SYSTEM_PATH     => $ciSystemDir,
-            DiConfig::DEPLOY_BIZ_CONFIG_PATH => $bizConfigDir,
-            '/home/xiaoju/.services/disf'    => $cwd . '/__naming__',
+            '/home/xiaoju/.services/disf' => $cwd . '/__naming__',
         ];
-
+        if (is_dir($ciSystemDir)) {
+            $default[DiConfig::DEPLOY_SYSTEM_PATH] = $ciSystemDir;
+        }
+        if (is_dir($bizConfigDir)) {
+            $default[DiConfig::DEPLOY_BIZ_CONFIG_PATH] = $bizConfigDir;
+        }
         $deployPath = $config->get('php', 'deploy-path');
         if (!empty($deployPath)) {
             $default[$deployPath] = $cwd;
