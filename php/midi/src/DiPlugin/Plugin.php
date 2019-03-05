@@ -180,8 +180,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         // Add mock dirs and inject codes
         $redirectDir = MockDir::getRedirectDir();
         if (!empty($redirectDir)) {
+            // local config.yml have high priority
+            $configRedirectDir = $config->get('redirect-dir');
+            foreach ($redirectDir as $from => $to) {
+                if (!isset($configRedirectDir[$from])) {
+                    $configRedirectDir[$from] = $to;
+                }
+            }
             $config->merge([
-                'redirect-dir' => $redirectDir,
+                'redirect-dir' => $configRedirectDir,
                 'php'          => [
                     'pre-inject-file' => [__DIR__ . DR . 'Inject.php'],
                 ],

@@ -138,7 +138,8 @@ For more details: [midi](./php/midi/README.md) 。
 
 - macOS (linux support is coming soon)
 - PHP >= 7.0
-- Xdebug
+- Xdebug (Optional)
+- Composer (Optional)
 
 ### 4.2 Compile Koala-libc
 

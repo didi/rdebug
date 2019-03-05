@@ -135,8 +135,8 @@ Midi 也支持 Xdebug 联动，对被测代码设置断点，进行单步调试�
 
 - macOS (linux 即将支持)
 - PHP >= 7.0
-- Xdebug
-- Composer
+- Xdebug (可选)
+- Composer（可选）
 
 ### 4.2 编译 Koala-libc
 
