@@ -67,6 +67,11 @@ $ /path/to/rdebug/php/midi/bin/midi run -f RECORD-SESSION-FILE
 $ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi.phar
 $ midi.phar run -f RECORD-SESSION-FILE
 
+# Or, Composer global
+$ composer global require nuwa/midi
+$ cd /path/to/your/project
+$ ~/.composer/vendor/bin/midi run -f RECORD-SESSION-FILE
+
 # Or, Composer
 $ cd /path/to/your/project
 $ composer require rdebug/midi --dev

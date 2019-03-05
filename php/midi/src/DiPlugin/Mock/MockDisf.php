@@ -75,8 +75,8 @@ class MockDisf
         $servName = DiConfig::getModuleDisfName($sModule);
         if (empty($servName)) {
             throw new RuntimeException("Can not find current module's disf name!"
-                . " You could disable disf by `enable-disf: false` or set module's disf name by `module-disf-name: MODULE_DISF_NAME`"
-                . "in config.yml!");
+                . " You could disable disf by `enable-disf: false`"
+                . " or set module's disf name by `module-disf-name: MODULE_DISF_NAME` in config.yml!");
         }
 
         if ($increase) {
@@ -405,6 +405,7 @@ HHHHH;
                     return $file->getMTime() > $mTime;
                 })
                 ->notPath('#vendor/.*/test#')
+                ->notPath('#vendor/.*/tests#')
                 ->exclude(self::$excludes)
                 ->depth(0)
                 ->ignoreUnreadableDirs(true);
