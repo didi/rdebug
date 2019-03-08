@@ -194,10 +194,18 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                     $configRedirectDir[$from] = $to;
                 }
             }
+            $prependFiles = $config->get('php', 'pre-inject-file');
+            if (empty($prependFiles)) {
+                $prependFiles = [];
+            } elseif (!is_array($prependFiles)) {
+                $prependFiles = [$prependFiles];
+            }
+            array_push($prependFiles, __DIR__ . DR . 'Inject.php');
+            $prependFiles = array_unique($prependFiles);
             $config->merge([
                 'redirect-dir' => $configRedirectDir,
                 'php'          => [
-                    'pre-inject-file' => [__DIR__ . DR . 'Inject.php'],
+                    'pre-inject-file' => $prependFiles,
                 ],
             ]);
         }
@@ -230,8 +238,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                             }
                         }
                         file_put_contents($midiDist, $content);
-                        Coverage::setPhpUnitDist($midiDist);
                     }
+                    Coverage::setPhpUnitDist($midiDist);
                 }
             }
             if ($isCI) {

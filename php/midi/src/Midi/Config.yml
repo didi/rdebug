@@ -6,7 +6,6 @@ koala:
     outbound-port: 5516
     replay-match-threshold: 0.75
     inbound-read-timeout: 86400s
-    gc-global-status-timeout: 86400s
     inbound-protocol: HTTP # HTTP or FastCGI, default is HTTP
 
 php:

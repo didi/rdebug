@@ -78,9 +78,18 @@ class ReplayerCommand extends BaseCommand
             'xdebug' => $input->getOption('xdebug'),
         ];
 
+        $config = $this->getMidi()->getConfig();
+        $timeout = $config->get('koala', 'inbound-read-timeout');
+        if (!empty($timeout)) {
+            $options['KOALA_INBOUND_READ_TIMEOUT'] = $timeout;
+        }
+        $timeout = $config->get('koala', 'gc-global-status-timeout');
+        if (empty($timeout)) {
+            $options['KOALA_GC_GLOBAL_STATUS_TIMEOUT'] = $timeout;
+        }
+
         // Under xdebug mode, set read & gc timeout 24 hour
         if ($input->getOption('xdebug')) {
-            $config = $this->getMidi()->getConfig();
             $options['KOALA_INBOUND_READ_TIMEOUT'] = $config->get('koala', 'inbound-read-timeout') ?? self::TIMEOUT_24H;
             $options['KOALA_GC_GLOBAL_STATUS_TIMEOUT'] = $config->get('koala', 'gc-global-status-timeout') ?? self::TIMEOUT_24H;
         }

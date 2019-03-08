@@ -131,13 +131,13 @@ class Config
             return $code = '';
         }
 
-        if ($inject === $this->getPrependFile()) {
+        if (!is_array($inject)) {
+            $inject = [$inject,];
+        }
+        if (in_array($this->getPrependFile(), $inject)) {
             throw new \Error("Filename $inject is internal use only, please change your inject filename");
         }
 
-        if (is_string($inject)) {
-            $inject = [$inject,];
-        }
         foreach ($inject as $file) {
             if (substr($file, 0, 5) === '<?php') {
                 $code .= $file;

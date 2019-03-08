@@ -46,7 +46,7 @@ $ composer install -o --no-dev # 如果使用 composer
 
 # 回放流量
 # -f 回放指定文件
-$ midi.phar rum -f /path/to/1535205264063473345-18757.json   # 回放指定 Session 文件
+$ midi.phar run -f /path/to/1535205264063473345-18757.json   # 回放指定 Session 文件
 
 # 支持 elastic 搜索流量
 # 需要在 config.yml 中配置 elastic-search-url
@@ -78,7 +78,7 @@ $ midi.phar run -i URI -S
 $ midi.phar run -s SessionId -S /path/to/save_dir # 保存到指定路径
 
 # 支持多个选项同时使用
-$ midi.pahr rum -i URI1 -i URI2 -s SessionId1 -s SessionId2 -S 
+$ midi.phar run -i URI1 -i URI2 -s SessionId1 -s SessionId2 -S 
 
 # DiPlugin 插件功能
 $ midi.phar doctor    # 在项目目录下，进行各项指标检查(内部功能)

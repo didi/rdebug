@@ -406,7 +406,13 @@ class Koala
      */
     public function getServerCmd()
     {
-        return 'php -S 127.0.0.1:' . $this->sutPort;
+        $phpBin = $this->config->get('php', 'bin');
+        if (!empty($phpBin) && file_exists($phpBin)) {
+            $phpBin = realpath($phpBin);
+        } else {
+            $phpBin = 'php';
+        }
+        return sprintf("%s -S 127.0.0.1:%d", $phpBin, $this->sutPort);
     }
 
     /**

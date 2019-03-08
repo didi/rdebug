@@ -41,6 +41,7 @@ mock-files:
 record-host:
 
 php:
+    bin:
     deploy-path:
     koala-php-ini:
         memory_limit: 1G
@@ -172,6 +173,10 @@ rdebug
 - php
 
     php 相关的配置。
+    
+    - bin
+    
+        php 指定作为回放的 php 二进制文件。
 
     - deploy-path
       

@@ -37,6 +37,7 @@ mock-files:
 record-host:
 
 php:
+    bin:
     deploy-path:
     koala-php-ini:
         memory_limit: 1G
@@ -146,7 +147,11 @@ rdebug
     Used by DiPlugin search command, pass the machine name, search for recorded traffic more accurately.
 
 - php
-
+    
+    - bin
+    
+        php binary file used by replayer as server.
+        
     - deploy-path
       
         Set your online deploy path. Midi will auto redirect your deploy path to your local project path.

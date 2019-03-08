@@ -2,6 +2,8 @@
 set -e
 set -x
 
+RDEBUG=$(cd ../`dirname $0` && pwd -P)
+
 case $1 in
     "recorder" )
         # record to file, only for testing purpose
@@ -12,8 +14,8 @@ case $1 in
         ;;
     "vendor" )
         if [ ! -d /tmp/build-golang/src/github.com/didi/rdebug ]; then
-            mkdir -p /tmp/build-golang/src/github.com/didi/rdebug
-            ln -s $PWD /tmp/build-golang/src/github.com/didi/rdebug/koala
+            mkdir -p /tmp/build-golang/src/github.com/didi
+            ln -s $RDEBUG /tmp/build-golang/src/github.com/didi/rdebug
         fi
         export GOPATH=/tmp/build-golang
         go get github.com/Masterminds/glide
