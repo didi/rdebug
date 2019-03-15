@@ -86,6 +86,10 @@ func (recorder *esRecorder) Record(session *recording.Session) {
 		return
 	}
 	resp, err := http.Post(recorder.url, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		countlog.Error("event!recorder.failed to request es", "err", err)
+		return
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
