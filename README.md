@@ -36,14 +36,17 @@ Support for new api is under investigation.
 ### Traffic Recording
 
 ```shell
-# Start php-fpm with koala-libc.so & koala-recorder.so
-# Compile koala-libc.so & koala-recorder.so first
+# Modify php-fpm config, set `clear_env = no`
 
-# Environment
+# Compile koala-libc.so & koala-recorder.so
+
+# Start php-fpm with koala-libc.so & koala-recorder.so
+# Set environment first
 $ export KOALA_SO=/path/to/koala-recorder.so 
 $ export KOALA_RECORD_TO_DIR=/path/to/your-save-recorded-session-dir
 $ export LC_CTYPE="C"
 
+# Recording
 # macOS
 $ DYLD_INSERT_LIBRARIES="/path/to/koala-libc.so:/usr/lib/libcurl.dylib" DYLD_FORCE_FLAT_NAMESPACE="y" /path/to/sbin/php-fpm
 
@@ -68,7 +71,7 @@ $ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi
 $ midi.phar run -f RECORD-SESSION-FILE
 
 # Or, Composer global
-$ composer global require nuwa/midi
+$ composer global require rdebug/midi
 $ cd /path/to/your/project
 $ ~/.composer/vendor/bin/midi run -f RECORD-SESSION-FILE
 
@@ -80,6 +83,7 @@ $ ./vendor/bin/midi run -f RECORD-SESSION-FILE
 
 ### PHP Example
 
+- [Try Record & Replay With Docker](./doc/Docker.md)
 - [PHP Record & Replay Example](./example/php/README.md)
 - [Replay Local File](./doc/midi/Replay-file.md)
 
@@ -141,7 +145,7 @@ For more details: [midi](./php/midi/README.md) 。
 
 #### Midi
 
-- macOS (linux support is coming soon)
+- macOS/Linux
 - PHP >= 7.0
 - Xdebug (Optional)
 - Composer (Optional)

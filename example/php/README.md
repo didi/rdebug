@@ -10,13 +10,13 @@ This example needs nginx & php-fpm, you should install first.
 
 Webroot at `/usr/local/var/koala` and listen port `9111`.
 
-PHP request will pass to `/usr/local/var/run/php70-fpm.sock`.
+PHP request will pass to `/usr/local/var/run/php-fpm.sock`.
 
 ```
-worker_processes 2;
+worker_processes auto;
 
 events {
-    worker_connections 51200;
+    worker_connections 1024;
 }
 
 worker_rlimit_nofile 51200;
@@ -36,12 +36,11 @@ http {
         root /usr/local/var/koala;
 
         location / {
-            root /usr/local/var/koala;
             index index.php index.html index.htm;
         }
 
         location ~ \.php$ {
-            fastcgi_pass   unix:/usr/local/var/run/php70-fpm.sock;
+            fastcgi_pass   unix:/usr/local/var/run/php-fpm.sock;
 
             fastcgi_split_path_info ^(.+\.php)(/.*)$;
             fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
@@ -51,6 +50,13 @@ http {
         }
     }
 }
+```
+## php-fpm Config
+
+Modify php-fpm config and set `clear_env` to `no`:
+
+```
+clear_env = no
 ```
 
 ## index.php
@@ -265,3 +271,14 @@ $ midi.phar run -f 1548073294845473414-6556170 -ORT
 ```
 
 Config [Documentation](https://github.com/didi/rdebug/blob/master/doc/midi/Config-en-US.md) / [中文文档](https://github.com/didi/rdebug/blob/master/doc/midi/Config.md).
+
+### 2. How to check inject works
+
+```
+# Check fpm master, will get koala-libc.so
+$ lsof -p php-fpm-master-PID | grep koala
+
+# Check php-worker after request, will koala-libc.so & koala-recorder.so
+$ lsof -p php-fpm-worker-PID | grep koala
+```
+

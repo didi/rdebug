@@ -32,14 +32,17 @@ Rdebug 是滴滴开源的一款用于 RD 研发、自测、调试的实用工具
 ### 录制流量
 
 ```shell
-# Start php-fpm with koala-libc.so & koala-recorder.so
-# Compile koala-libc.so & koala-recorder.so first
+# 修改 php-fpm 配置，打开 `clear_env = no` 选项
 
-# Environment
+# 编译 koala-libc.so 和 koala-recorder.so
+
+# 启动 php-fpm 注入 koala-libc.so 和 koala-recorder.so
+# 先设置环境变量
 $ export KOALA_SO=/path/to/koala-recorder.so 
 $ export KOALA_RECORD_TO_DIR=/path/to/your-save-recorded-session-dir
 $ export LC_CTYPE="C"
 
+# 启动 php-fpm 开始录制
 # macOS
 $ DYLD_INSERT_LIBRARIES="/path/to/koala-libc.so:/usr/lib/libcurl.dylib" DYLD_FORCE_FLAT_NAMESPACE="y" /path/to/sbin/php-fpm
 
@@ -52,23 +55,23 @@ $ LD_PRELOAD="/path/to/koala-libc.so /usr/lib64/libcurl.so.4" /path/to/sbin/php-
 回放支持 3 种方式：下载源码回放、midi.phar 包回放、composer bin 回放。
 
 ```shell
-# Source
+# 直接用源码回放
 $ git clone https://github.com/didi/rdebug.git
 $ cd rdebug/php/midi
 $ sh install.sh
 $ cd /path/to/your/project
 $ /path/to/rdebug/php/midi/bin/midi run -f RECORD-SESSION-FILE
 
-# Or, Phar
+# 或，使用 phar 包回放
 $ wget -O midi.phar -q https://github.com/didi/rdebug/raw/master/output/bin/midi.phar
 $ midi.phar run -f RECORD-SESSION-FILE
 
-# Or, Composer global
-$ composer global require nuwa/midi
+# 或，Composer 全局安装 midi（相比安装到项目中，推荐全局安装）
+$ composer global require rdebug/midi
 $ cd /path/to/your/project
 $ ~/.composer/vendor/bin/midi run -f RECORD-SESSION-FILE
 
-# Or, Composer
+# 或，Composer 安装到项目目录下
 $ cd /path/to/your/project
 $ composer require rdebug/midi --dev
 $ ./vendor/bin/midi run -f RECORD-SESSION-FILE
@@ -76,6 +79,7 @@ $ ./vendor/bin/midi run -f RECORD-SESSION-FILE
 
 ### PHP 示例
 
+- [使用 Docker 体验录制和回放](./doc/Docker.md)
 - [PHP 录制和回放](./example/php/README.md)
 - [PHP 回放本地文件](./doc/midi/Replay-file.md)
 - [PHP 录制方案](./doc/recorder/recorder.md)
@@ -138,7 +142,7 @@ Midi 也支持 Xdebug 联动，对被测代码设置断点，进行单步调试�
 
 #### Midi
 
-- macOS (linux 即将支持)
+- macOS/Linux
 - PHP >= 7.0
 - Xdebug (可选)
 - Composer（可选）

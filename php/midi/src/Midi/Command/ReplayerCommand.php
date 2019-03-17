@@ -8,6 +8,7 @@ namespace Midi\Command;
 
 use Midi\Container;
 use Midi\Koala\Koala;
+use Midi\Util\OS;
 use Midi\Util\Util;
 use Midi\Util\FileUtil;
 use Midi\Plugin\PluginEvents;
@@ -157,6 +158,8 @@ class ReplayerCommand extends BaseCommand
             $this->startCMD = $this->koala->getStartCMD($options);
         }
 
+        // Notice for Linux, LD_PRELOAD in env pass to Process will not work, but macOS is ok.
+        // So, add LD_PRELOAD or DYLD_INSERT_LIBRARIES in CMD
         $this->process = new Process($this->startCMD);
         $this->process->start();
         $pid = $this->process->getPid();
@@ -174,6 +177,16 @@ class ReplayerCommand extends BaseCommand
             $this->output->writeln("<info>More replayer output at: " . Container::make('koalaLog') . "</info>");
         }
         $this->process->stop();
+
+        // But, LD_PRELOAD add in CMD will get wrong process id, wrong pid +1 = real pid
+        // So, When at linux platform we need register_shutdown_function to kill php -S server.
+        if (OS::isLinux()) {
+            try {
+                Util::checkPortsAvailable($this->koala->getPorts());
+            } catch (\Exception $e) {
+                static::stopReplayer($this->koala->getPorts());
+            }
+        }
     }
 
     /**
@@ -219,5 +232,45 @@ class ReplayerCommand extends BaseCommand
             $static = Container::make('templateDir') . DR . 'static';
             FileUtil::copyDir($static, $staticTmpDir);
         }
+    }
+
+    /**
+     * Get replayer's pid by replayer's inbound & outbound ports.
+     *
+     * Inbound's pid === Outbound's pid
+     *
+     * @param array $ports
+     * @return int -1 replayer not exist, 0 stop success, 1 stop fail
+     */
+    public static function stopReplayer($ports, $signal = 9)
+    {
+        $pids = [];
+        foreach ($ports as $port) {
+            $p = new Process("lsof -ti:$port");
+            $p->run();
+            $pid = trim($p->getOutput());
+            if (!is_numeric($pid)) {
+                return -1;
+            }
+            $pids[$pid] = $pid;
+            if (count($pids) > 1) {
+                return -1;
+            }
+        }
+
+        if (empty($pids)) {
+            return -1;
+        }
+        $pid = intval(current($pids));
+
+        if (function_exists('posix_kill')) {
+            $ok = @posix_kill($pid, $signal);
+        } elseif ($ok = proc_open(sprintf('kill -%d %d', $signal, $pid), array(2 => array('pipe', 'w')), $pipes)) {
+            $ok = false === fgets($pipes[2]);
+        }
+        if (!$ok) {
+            return 1;
+        }
+        return 0;
     }
 }

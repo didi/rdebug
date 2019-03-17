@@ -8,7 +8,9 @@ set -x
 
 # composer.json must at root directory
 # copy composer.json to current directory, change autoload path to current dir
-cp ../../composer.json .
+if [ ! -f "composer.json" ]; then
+    cp ../../composer.json .
+fi
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     sed -i -e "s#php/midi/src#src#g" composer.json
     sed -i -e "s#php/midi/tests#tests#g" composer.json

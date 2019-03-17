@@ -335,17 +335,7 @@ class Koala
             $env['DYLD_INSERT_LIBRARIES'] = $koalaReplayer . ':/usr/lib/libcurl.dylib';
             $env['DYLD_FORCE_FLAT_NAMESPACE'] = 'y';
         } elseif (OS::isLinux()) {
-            // TODO optimize
             $env['LD_PRELOAD'] = $koalaReplayer;
-            $extDir = ini_get('extension_dir');
-            $curlSO = $extDir . DR . 'curl.so';
-            if (file_exists($curlSO)) {
-                $env['LD_PRELOAD'] .= " $curlSO";
-            }
-            $socketSO = $extDir . DR . 'sockets.so';
-            if (file_exists($socketSO)) {
-                $env['LD_PRELOAD'] .= " $socketSO";
-            }
         } else {
             throw new RuntimeException(sprintf("Sorry, not support %s system", PHP_OS));
         }
@@ -474,10 +464,12 @@ class Koala
             foreach ($checkList as $k => $process) {
                 $process->start();
                 foreach ($process as $resp) {
-                    $this->output->writeln("<info>Ping Koala: <comment>" . trim($resp) . "</comment></info>",
+                    $this->output->writeln("<info>Ping Koala, Pong: <comment>" . trim($resp) . "</comment></info>",
                         OutputInterface::VERBOSITY_VERY_VERBOSE
                     );
-                    if (strpos($resp, 'succeeded') !== false) {
+                    if ((OS::isMacOs() && strpos($resp, 'succeeded') !== false)
+                        || (OS::isLinux() && strpos($resp, 'open') !== false)
+                    ) {
                         $status[$k] = true;
                         unset($checkList[$k]);
                         break;

@@ -14,7 +14,7 @@
       "Zone": ""
     },
     "UnixAddr": {
-      "Name": "/usr/local/var/run/php70-fpm.sock",
+      "Name": "/usr/local/var/run/php-fpm.sock",
       "Net": "unix"
     },
     "Request": "\\x01\\x01\\x00\\x01\\x00\\x08\\x00\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x01\\x04\\x00\\x01\\x02\\x1c\\x04\\x00\\x0f\\x1eSCRIPT_FILENAME/usr/local/var/koala/index.php\r\\x14DOCUMENT_ROOT/usr/local/var/koala\\x0c\\x00QUERY_STRING\\x0e\\x03REQUEST_METHODGET\\x0c\\x00CONTENT_TYPE\\x0e\\x00CONTENT_LENGTH\\x0b\nSCRIPT_NAME/index.php\\x0b\nREQUEST_URI/index.php\\x0c\nDOCUMENT_URI/index.php\r\\x14DOCUMENT_ROOT/usr/local/var/koala\\x0f\\x08SERVER_PROTOCOLHTTP/1.1\\x0e\\x04REQUEST_SCHEMEhttp\\x11\\x07GATEWAY_INTERFACECGI/1.1\\x0f\\x0cSERVER_SOFTWAREnginx/1.11.2\\x0b\tREMOTE_ADDR127.0.0.1\\x0b\\x05REMOTE_PORT64998\\x0b\tSERVER_ADDR127.0.0.1\\x0b\\x04SERVER_PORT9111\\x0b\tSERVER_NAMElocalhost\\x0f\\x03REDIRECT_STATUS200\t\\x0eHTTP_HOST127.0.0.1:9111\\x0f\\x0bHTTP_USER_AGENTcurl/7.54.0\\x0b\\x03HTTP_ACCEPT*/*\\x00\\x00\\x00\\x00\\x01\\x04\\x00\\x01\\x00\\x00\\x00\\x00\\x01\\x05\\x00\\x01\\x00\\x00\\x00\\x00"

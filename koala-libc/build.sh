@@ -1,6 +1,7 @@
 #!/bin/bash
 set -x
 set -e
-mkdir -p ../output/libs
-gcc -shared -fPIC hook.c -o ../output/libs/koala-libc.so -ldl -std=c99
-echo "compiled to ../output/libs/koala-libc.so"
+RDEBUG=$(cd ../`dirname $0` && pwd -P)
+mkdir -p $RDEBUG/output/libs
+gcc -shared -fPIC hook.c -o $RDEBUG/output/libs/koala-libc.so -ldl -std=c99
+echo "Finish compiled koala-libc to $RDEBUG/output/libs/koala-libc.so"
