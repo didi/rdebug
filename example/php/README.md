@@ -282,3 +282,9 @@ $ lsof -p php-fpm-master-PID | grep koala
 $ lsof -p php-fpm-worker-PID | grep koala
 ```
 
+Or, open koala debug log:
+
+```
+# Before start php-fpm with koala, export env:
+$ export KOALA_LOG_FILE="/tmp/rdebug/debug.log" KOALA_LOG_LEVEL="DEBUG"
+```

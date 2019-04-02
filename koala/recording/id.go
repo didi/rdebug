@@ -123,7 +123,7 @@ func randInt() uint32 {
 	return uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
 }
 
-// New generates a globaly unique ID
+// New generates a global unique ID
 func newID() ID {
 	var id ID
 	// Timestamp, 4 bytes, big endian

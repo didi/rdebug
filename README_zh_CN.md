@@ -287,7 +287,7 @@ Rdebug is licensed under the Apache 2.0 License. [LICENSE](./LICENSE)
 
 特别感谢 [TaoWen](https://github.com/taowen) Koala & Koala-libc 开发者。
 
-[TanMingliang](https://github.com/TopN) WangBizhou FangJunda YangJing YangBochen LiXiaodong Midi 开发者。
+[TanMingliang](https://github.com/MingliangT) WangBizhou FangJunda YangJing YangBochen LiXiaodong Midi 开发者。
 
 特别感谢 Symfony、Xdebug、PHPUnit & Code Coverage、guzzlehttp 等开发者，提供如此好用的工具。
 
