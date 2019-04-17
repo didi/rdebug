@@ -44,8 +44,8 @@ class SearchCommand extends BaseCommand
             ->addOption('--run', '-r', InputOption::VALUE_NONE, '搜索后 直接运行')
             ->addOption('--exclude-key', '-E', InputOption::VALUE_OPTIONAL, '忽略某 Keys 的 DIFF', false)
             ->addOption('--display-diff-only', '-D', InputOption::VALUE_OPTIONAL, '是否只显示 DIFF，默认全部显示', false)
-            ->addOption('--open', '-O', InputOption::VALUE_NONE, 'After replayed, direct open report at browser')
-            ->addOption('--report', '-R', InputOption::VALUE_NONE, 'Generate replay report')
+            ->addOption('--open', '-O', InputOption::VALUE_NONE, '回放流量后，直接在浏览器中打开报告')
+            ->addOption('--report', '-R', InputOption::VALUE_NONE, '生成回放报告')
             ->setHelp('<info>php midi search</info>');
     }
 
