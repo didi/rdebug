@@ -273,6 +273,10 @@ class Differ implements DifferInterface
             if (is_array($value) && is_array($aBodySec[$key])) {
                 $result = $this->_getDiff($value, $aBodySec[$key]);
                 if (!empty($result)) {
+                    if (isset($this->config['exclude-keys'][$key])) {
+                        $aBodyFst[$key] = '<fg=black;bg=cyan>' . $value . '</>';
+                        continue;
+                    }
                     $diff[$key] = $result;
                 }
                 continue;

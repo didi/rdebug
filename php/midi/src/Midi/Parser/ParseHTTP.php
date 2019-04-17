@@ -7,8 +7,8 @@ class ParseHTTP implements ParseInterface
 
     public static function match($request, $response = null)
     {
-        return preg_match('/^(GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT).*HTTP\/1\.[1|0]/', $request)
-            || preg_match('/^HTTP\/1.[0|1][[:space:]][1-5]\d\d/', $response);
+        return preg_match('/^(GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT)\s+.*\s+HTTP\/1\.[10]/', $request)
+            || preg_match('/^HTTP\/1.[01][[:space:]][1-5]\d\d/', $response);
     }
 
     public static function parse($request, $response = null)

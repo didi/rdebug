@@ -18,6 +18,7 @@ use Midi\Koala\Replaying\CallOutbound;
 use Midi\Koala\Replaying\ReplayingSession;
 use Midi\Koala\Replaying\ReturnInbound;
 use Midi\Parser\ParseFCGI;
+use Midi\Parser\ParseHTTP;
 use Midi\Reporter\Coverage;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -177,22 +178,70 @@ class ParseRecorded
         return $returnInbound;
     }
 
+    /**
+     * fix http calloutbound
+     *
+     * one connection and multi actions:
+     *
+     * action1
+     *     request: GET /path/abc?...
+     *     response: (empty response)
+     * action2
+     *     request: (empty request)
+     *     response: abc
+     *
+     * fixed:
+     * action1
+     *     request: GET /path/abc?...
+     *     response: abc
+     */
     private static function buildActions($recordedSession)
     {
+        // for fix http CallOutbound
+        $outbounds = [];
+        $outboundIdx = 1;
+        $identifier2Idxs = [];
+        $fixOutboundsIdx = [];
+        $notFixIdentifiers = [];
+
         $ret = [];
         foreach ($recordedSession['Actions'] as $action) {
             switch ($action['ActionType']) {
                 case 'CallOutbound':
-                    $callOutbound = new CallOutbound();
-                    $callOutbound->setOccurredAt($action['OccurredAt']);
-                    $callOutbound->setActionIndex($action['ActionIndex']);
-                    $callOutbound->setActionType($action['ActionType']);
-                    $callOutbound['Peer'] = $action['Peer'];
-                    $callOutbound->setResponseTime($action['ResponseTime']);
-                    $callOutbound->setRequest(base64_encode(stripcslashes($action['Request'])));
-                    $callOutbound->setResponse(base64_encode(stripcslashes($action['Response'])));
-                    $callOutbound->setSocketFD($action['SocketFD']);
-                    $ret['CallOutbounds'][] = $callOutbound;
+                    $idx = $outboundIdx;
+                    $outbounds[$idx] = $action;
+                    ++$outboundIdx;
+
+                    $identifier = self::getIdentifier($action);
+                    if (empty($identifier)) {
+                        continue;
+                    }
+                    if (isset($identifier2Idxs[$identifier])) {
+                        $identifier2Idxs[$identifier][] = $idx;
+                    } else {
+                        $identifier2Idxs[$identifier] = [$idx];
+                    }
+
+                    if (isset($notFixIdentifiers[$identifier])) {
+                        continue;
+                    }
+                    if (empty($action['Request']) || empty($action['Response'])) {
+                        if (isset($fixOutboundsIdx[$identifier])) {
+                            $fixOutboundsIdx[$identifier][] = $idx;
+                        } else {
+                            // check first traffic is HTTP?
+                            if (isset($identifier2Idxs[$identifier])) {
+                                $firstIdx = $identifier2Idxs[$identifier][0];
+                            } else {
+                                $firstIdx = $idx;
+                            }
+                            if (!ParseHTTP::match($outbounds[$firstIdx]['Request'], $outbounds[$firstIdx]['Response'])) {
+                                $notFixIdentifiers[$identifier] = 1;
+                                continue;
+                            }
+                            $fixOutboundsIdx[$identifier] = [$idx];
+                        }
+                    }
                     break;
                 case 'AppendFile':
                     $ret['AppendFiles'][] = $action;
@@ -204,6 +253,36 @@ class ParseRecorded
                     /** apcu */
                     $ret['ReadStorages'][] = $action;
             }
+        }
+
+        foreach ($fixOutboundsIdx as $identifier => $todoFixIdxs) {
+            $c = count($todoFixIdxs);
+            for ($i = 0; $i < $c;) {
+                $todoFixIdx = $todoFixIdxs[$i];
+                if (empty($outbounds[$todoFixIdx]['Response']) && isset($todoFixIdxs[$i + 1])) {
+                    $nextIdx = $todoFixIdxs[$i + 1];
+                    if (empty($outbounds[$nextIdx]["Request"])) {
+                        $outbounds[$todoFixIdx]['Response'] = $outbounds[$nextIdx]["Response"];
+                        unset($outbounds[$nextIdx]);
+                        $i += 2;
+                        continue;
+                    }
+                }
+                ++$i;
+            }
+        }
+
+        foreach ($outbounds as $idx => $action) {
+            $callOutbound = new CallOutbound();
+            $callOutbound->setOccurredAt($action['OccurredAt']);
+            $callOutbound->setActionIndex($action['ActionIndex']);
+            $callOutbound->setActionType($action['ActionType']);
+            $callOutbound['Peer'] = $action['Peer'];
+            $callOutbound->setResponseTime($action['ResponseTime']);
+            $callOutbound->setRequest(base64_encode(stripcslashes($action['Request'])));
+            $callOutbound->setResponse(base64_encode(stripcslashes($action['Response'])));
+            $callOutbound->setSocketFD($action['SocketFD']);
+            $ret['CallOutbounds'][] = $callOutbound;
         }
 
         return $ret;
@@ -230,5 +309,13 @@ class ParseRecorded
         }
 
         return $requestUrl;
+    }
+
+    private static function getIdentifier($action) {
+        if (empty($action['Peer'])) {
+            return '';
+        }
+        $peer = $action['Peer'];
+        return sprintf("%s:%d#%d", $peer['IP'], $peer['PORT'], $action['SocketFD']);
     }
 }

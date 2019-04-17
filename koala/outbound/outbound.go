@@ -77,15 +77,15 @@ func handleOutbound(conn *net.TCPConn) {
 		replayingSession := replaying.RetrieveTmp(*tcpAddr)
 		if replayingSession == nil {
 			if len(request) == 0 {
-				countlog.Warn("event!outbound.read request empty", "ctx", ctx, "i", i)
+				countlog.Warn("event!outbound.read can not find replaying session and request empty", "ctx", ctx, "i", i)
 				return
 			}
-			if protocol == "mysql" {
-				// when mysql connection setup at application startup
-				if err := applySimulation(simulateMysql, ctx, request, conn, nil); err != nil {
-					return
-				}
-			}
+			//if protocol == "mysql" {
+			//	// when mysql connection setup at application startup
+			//	if err := applySimulation(simulateMysql, ctx, request, conn, nil); err != nil {
+			//		return
+			//	}
+			//}
 			countlog.Error("event!outbound.outbound can not find replaying session",
 				"ctx", ctx, "addr", tcpAddr, "content", request, "protocol", protocol)
 			return
