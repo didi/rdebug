@@ -23,10 +23,13 @@ class MockStorage
 
         $patch = <<<CODE
 <?php
+\$_error_report_level = error_reporting();
+error_reporting(\$_error_report_level & ~E_NOTICE);
 apcu_clear_cache();
 
 CODE;
         $patchEnd = <<<CODE
+error_reporting(\$_error_report_level);        
 ?>
 
 CODE;
@@ -53,7 +56,9 @@ CODE;
 $val
 VAL;
 \$v = unserialize(\$v);
-apcu_store('$key', \$v);
+if (\$v !== false) {
+    apcu_store('$key', \$v);
+}
 
 CODE;
             $patchCode = $initCode.$patchCode;

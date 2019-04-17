@@ -11,6 +11,7 @@ import (
 	"regexp"
 
 	"github.com/v2pro/plz/countlog"
+	"github.com/didi/rdebug/koala/replaying/lexer"
 )
 
 var inboundAddr *net.TCPAddr
@@ -35,6 +36,8 @@ func init() {
 	initReplayingMatchStrategy()
 	initGcGlobalStatusTimeout()
 	initLog()
+
+	lexer.Lexers = append(lexer.Lexers, lexer.NewHTTPLexer())
 
 	countlog.Trace("event!koala.envarg_init",
 		"logLevel", logLevel, "logFile", logFile, "logFormat", logFormat,
