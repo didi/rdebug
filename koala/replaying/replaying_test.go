@@ -12,25 +12,9 @@ import (
 	"time"
 
 	"github.com/didi/rdebug/koala/recording"
-	"github.com/didi/rdebug/koala/replaying/similarity"
+	"github.com/didi/rdebug/koala/replaying/lexer"
 	"github.com/stretchr/testify/require"
 )
-
-// Lexer adapter for tfidf
-type LexerAdapter struct {
-	similarity.Lexer
-}
-
-func NewLexerAdapter() *LexerAdapter {
-	return &LexerAdapter{}
-}
-
-func (s *LexerAdapter) Seg(text string) []string {
-	return s.Scan([]byte(text))
-}
-
-func (s *LexerAdapter) Free() {
-}
 
 type IdxScore struct {
 	Index int
@@ -53,7 +37,7 @@ func Test_match_best_score(t *testing.T) {
 	replayingSession := ReplayingSession{
 		CallOutbounds: []*recording.CallOutbound{talk1, talk2},
 	}
-	_, _, matched := Matcher.DoMatch(nil, -1, []byte{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, &replayingSession)
+	_, _, matched := Matcher.Match(NewConnMatchContext(nil, -1), []byte{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, &replayingSession)
 	should.Equal(talk1, matched)
 }
 
@@ -65,9 +49,11 @@ func Test_match_not_matched(t *testing.T) {
 	replayingSession := ReplayingSession{
 		CallOutbounds: []*recording.CallOutbound{talk1, talk2, talk3},
 	}
-	index, _, _ := Matcher.DoMatch(nil, -1, []byte{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, &replayingSession)
+
+	connCtx := NewConnMatchContext(nil, -1)
+	index, _, _ := Matcher.Match(connCtx, []byte{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, &replayingSession)
 	should.Equal(0, index)
-	index, _, _ = Matcher.DoMatch(nil, 0, []byte{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, &replayingSession)
+	index, _, _ = Matcher.Match(connCtx, []byte{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8}, &replayingSession)
 	should.Equal(1, index)
 }
 
@@ -87,38 +73,147 @@ func Test_bad_case(t *testing.T) {
 	reqStr := get(replayedSession, "Actions", 22, "Request").(string)
 	req, _ := base64.StdEncoding.DecodeString(reqStr)
 	fmt.Println(string(req))
-	index, mark, matched := Matcher.DoMatch(nil, -1, req, origSession)
+
+	connCtx := NewConnMatchContext(nil, -1)
+	index, mark, matched := Matcher.Match(connCtx, req, origSession)
 	should.NotNil(matched)
 	fmt.Println(string(matched.Request))
 	fmt.Println(mark)
 	should.Equal(1, index)
 }
 
-func Test_cos_without_TFIDF(t *testing.T) {
-	should := require.New(t)
+func Test_similarity_by_request(t *testing.T) {
 
-	orig, err := ioutil.ReadFile("koala-session-1543823956167768446-43304-original.json")
+	req := `GET /foundation/coupon/v1/couponinterface/getAvailableCoupons?pid=500&page=1&productid=20&orderid=1 HTTP/1.1
+Host: 10.69.28.59:8000
+Accept: */*
+didi-header-rid: 3
+didi-header-spanid: 8
+`
+
+	should := require.New(t)
+	orig, err := ioutil.ReadFile("/tmp/midi/session/session-1554172892148078842-26542-original.json")
 	should.Nil(err)
 	replayingSession := NewReplayingSession()
 	err = json.Unmarshal(orig, replayingSession)
 	should.Nil(err)
 
-	replayed, err := ioutil.ReadFile("koala-session-1543823956167768446-43304-replayed.json")
+	recordOutboundsCount := len(replayingSession.CallOutbounds)
+	rawRecordOutbounds := make(map[int]string)
+	recordOutboundsToken := make(map[int][]string, recordOutboundsCount)
+	recordOutboundsVector := make(map[int]map[string]float64, recordOutboundsCount)
+	for _, outbound := range replayingSession.CallOutbounds {
+		req := string(outbound.Request)
+		rawRecordOutbounds[outbound.ActionIndex] = req
+		recordOutboundsToken[outbound.ActionIndex] = lexer.Lex(outbound.Request)
+		recordOutboundsVector[outbound.ActionIndex] = lexer.Lex2Vector(outbound.Request)
+	}
+
+	maxScore := 0.0
+	maxScoreIdx := -1
+	var scores []IdxScore
+	test := lexer.Lex2Vector([]byte(req))
+	for idx, recordOutboundVector := range recordOutboundsVector {
+		sim := CosineSimilarity(recordOutboundVector, test)
+		if sim > maxScore {
+			maxScore = sim
+			maxScoreIdx = idx
+		}
+		scores = append(scores, IdxScore{Index: idx, Score: sim})
+	}
+	sort.Slice(scores, func(i, j int) bool {
+		return scores[i].Score > scores[j].Score
+	})
+
+	fmt.Printf("MaxScoreIdx: %d, Max score: %f, Second △: %f, Top 3 scores: %+v\n", maxScoreIdx, maxScore,
+		100*(scores[0].Score-scores[1].Score), scores[0:3])
+}
+
+func Test_similarity_by_replayed_actionid(t *testing.T) {
+	should := require.New(t)
+	orig, err := ioutil.ReadFile("/tmp/midi/session/session-1554172892148078842-26542-original.json")
+	should.Nil(err)
+	replayingSession := NewReplayingSession()
+	err = json.Unmarshal(orig, replayingSession)
+	should.Nil(err)
+
+	recordOutboundsCount := len(replayingSession.CallOutbounds)
+	rawRecordOutbounds := make(map[int]string)
+	recordOutboundsToken := make(map[int][]string, recordOutboundsCount)
+	recordOutboundsVector := make(map[int]map[string]float64, recordOutboundsCount)
+	for _, outbound := range replayingSession.CallOutbounds {
+		req := string(outbound.Request)
+		rawRecordOutbounds[outbound.ActionIndex] = req
+		recordOutboundsToken[outbound.ActionIndex] = lexer.Lex(outbound.Request)
+		recordOutboundsVector[outbound.ActionIndex] = lexer.Lex2Vector(outbound.Request)
+	}
+
+	replayed, err := ioutil.ReadFile("/tmp/midi/session/session-1554172892148078842-26542-replayed.json")
+	should.Nil(err)
+	var replayedSession interface{}
+	err = json.Unmarshal(replayed, &replayedSession)
+	should.Nil(err)
+
+	// here
+	targetActionId := "1555417324965080000"
+
+	calleds := get(replayedSession, "Actions").([]interface{})
+	var targetReq string
+	for _, replayedCall := range calleds {
+		called := replayedCall.(map[string]interface{})
+		actionId := called["ActionId"].(string)
+		actionType := called["ActionType"]
+		if actionType != "CallOutbound" || actionId != targetActionId {
+			continue
+		}
+		targetReq = unescape(called["Request"].(string))
+	}
+
+	maxScore := 0.0
+	maxScoreIdx := -1
+	var scores []IdxScore
+	test := lexer.Lex2Vector([]byte(targetReq))
+	for idx, recordOutboundVector := range recordOutboundsVector {
+		sim := CosineSimilarity(recordOutboundVector, test)
+		if sim > maxScore {
+			maxScore = sim
+			maxScoreIdx = idx
+		}
+		scores = append(scores, IdxScore{Index: idx, Score: sim})
+	}
+	sort.Slice(scores, func(i, j int) bool {
+		return scores[i].Score > scores[j].Score
+	})
+
+	fmt.Printf("MaxScoreIdx: %d, Max score: %f, Second △: %f, Top 3 scores: %+v\n", maxScoreIdx, maxScore,
+		100*(scores[0].Score-scores[1].Score), scores[0:3])
+}
+
+func Test_cos_similarity(t *testing.T) {
+	should := require.New(t)
+
+	orig, err := ioutil.ReadFile("/tmp/midi/session/session-1554172892148078842-26542-original.json")
+	should.Nil(err)
+	replayingSession := NewReplayingSession()
+	err = json.Unmarshal(orig, replayingSession)
+	should.Nil(err)
+
+	replayed, err := ioutil.ReadFile("/tmp/midi/session/session-1554172892148078842-26542-replayed.json")
 	should.Nil(err)
 	var replayedSession interface{}
 	err = json.Unmarshal(replayed, &replayedSession)
 	should.Nil(err)
 
 	begin := time.Now()
-
-	lexer := NewLexerAdapter()
 	recordOutboundsCount := len(replayingSession.CallOutbounds)
-	rawCallOutbounds := make(map[int]string)
-	recordOutbounds := make(map[int][]string, recordOutboundsCount)
+	rawRecordOutbounds := make(map[int]string)
+	recordOutboundsToken := make(map[int][]string, recordOutboundsCount)
+	recordOutboundsVector := make(map[int]map[string]float64, recordOutboundsCount)
 	for _, outbound := range replayingSession.CallOutbounds {
 		req := string(outbound.Request)
-		rawCallOutbounds[outbound.ActionIndex] = req
-		recordOutbounds[outbound.ActionIndex] = lexer.Scan([]byte(req))
+		rawRecordOutbounds[outbound.ActionIndex] = req
+		recordOutboundsToken[outbound.ActionIndex] = lexer.Lex(outbound.Request)
+		recordOutboundsVector[outbound.ActionIndex] = lexer.Lex2Vector(outbound.Request)
 	}
 	fmt.Printf("Online record CallOutbound count: %d\n", recordOutboundsCount)
 
@@ -128,6 +223,7 @@ func Test_cos_without_TFIDF(t *testing.T) {
 	calleds := get(replayedSession, "Actions").([]interface{})
 	for _, replayedCall := range calleds {
 		called := replayedCall.(map[string]interface{})
+		actionId := called["ActionId"].(string)
 		actionType := called["ActionType"]
 		if actionType != "CallOutbound" {
 			continue
@@ -139,12 +235,9 @@ func Test_cos_without_TFIDF(t *testing.T) {
 		maxScore := 0.0
 		maxScoreIdx := -1
 		var score []IdxScore
-		for idx, recordOutbound := range recordOutbounds {
-			online := strSlice2Map(recordOutbound)
-			test := strSlice2Map(lexer.Seg(request))
-			//online := strSlice2MapCount(recordOutbound)
-			//test := strSlice2MapCount(lexer.Seg(request))
-			sim := similarity.Cosine(online, test)
+		test := lexer.Lex2Vector([]byte(request))
+		for idx, recordOutboundVector := range recordOutboundsVector {
+			sim := CosineSimilarity(recordOutboundVector, test)
 			if sim > maxScore {
 				maxScore = sim
 				maxScoreIdx = idx
@@ -156,12 +249,26 @@ func Test_cos_without_TFIDF(t *testing.T) {
 			return score[i].Score > score[j].Score
 		})
 
-		fmt.Printf("Max score: %f, Second △: %f, Top 3 scores: %+v\n", maxScore, 100*(score[0].Score-score[1].Score), score[0:3])
+		fmt.Printf("Replayed ActionId: %s, Max score: %f, Second △: %f, Top 3 scores: %+v\n", actionId, maxScore, 100*(score[0].Score-score[1].Score), score[0:3])
+
+		// for debug, see top 3 matched request
+		//if actionId == "1554955091747692000" {
+		//	fmt.Println("-----------Req--------------")
+		//	fmt.Println(called["Request"].(string))
+		//	fmt.Println("------------0-------------")
+		//	fmt.Println(rawRecordOutbounds[score[0].Index])
+		//	fmt.Println("------------1-------------")
+		//	fmt.Println(rawRecordOutbounds[score[1].Index])
+		//	fmt.Println("------------2-------------")
+		//	fmt.Println(rawRecordOutbounds[score[2].Index])
+		//	fmt.Println("------------3-------------")
+		//	fmt.Println(rawRecordOutbounds[score[3].Index])
+		//}
 
 		if maxScoreIdx == matchedIdx {
 			cosMatchedCount += 1
 		} else {
-			if maxScoreIdx != -1 && request == rawCallOutbounds[maxScoreIdx] {
+			if maxScoreIdx != -1 && request == rawRecordOutbounds[maxScoreIdx] {
 				// 存在两个一模一样的请求
 				cosMatchedCount += 1
 			} else {
@@ -173,12 +280,12 @@ func Test_cos_without_TFIDF(t *testing.T) {
 				//
 				//online := f.Cal(recordOutbounds[matchedIdx])
 				//test := f.Cal(request)
-				//sim := similarity.Cosine(online, test)
+				//sim := matcher.CosineSimilarity(online, test)
 				//fmt.Println("Matched Sim:\n", sim)
 				//
 				//online = f.Cal(recordOutbounds[maxScoreIdx])
 				//test = f.Cal(request)
-				//sim = similarity.Cosine(online, test)
+				//sim = matcher.CosineSimilarity(online, test)
 				//fmt.Println("Chunk Matched Sim:\n", sim)
 			}
 		}
@@ -204,7 +311,7 @@ func Test_bad_case3(t *testing.T) {
 	reqBytes := unescape(req.(string))
 	fmt.Println(reqBytes)
 
-	index, mark, matched := Matcher.DoMatch(nil, 22, []byte(reqBytes), origSession)
+	index, mark, matched := Matcher.Match(NewConnMatchContext(nil, 22), []byte(reqBytes), origSession)
 	should.NotNil(matched)
 	fmt.Println(string(matched.Request))
 	fmt.Println(mark)
@@ -229,7 +336,8 @@ func Test_chunk_match(t *testing.T) {
 	reqBytes := unescape(req.(string))
 	fmt.Println(reqBytes)
 
-	index, mark, matched := Matcher.DoMatch(nil, 0, []byte(reqBytes), origSession)
+	connCtx := NewConnMatchContext(nil, 0)
+	index, mark, matched := Matcher.Match(connCtx, []byte(reqBytes), origSession)
 	should.NotNil(matched)
 	fmt.Println(string(matched.Request))
 	fmt.Println(mark)
@@ -333,14 +441,10 @@ func unescape(s string) string {
 	return string(out)
 }
 
-func strSlice2MapCount(str []string) map[string]float64 {
+func strSlice2MapWithoutWeight(str []string) map[string]float64 {
 	ret := make(map[string]float64, len(str))
 	for _, v := range str {
-		if _, ok := ret[v]; ok {
-			ret[v] += 1
-		} else {
-			ret[v] = 1
-		}
+		ret[v] = 1
 	}
 	return ret
 }
@@ -365,4 +469,16 @@ func resizeVector(vector map[string]float64, size int) map[string]float64 {
 	}
 
 	return resize
+}
+
+func strSlice2Vector(str []string) map[string]float64 {
+	ret := make(map[string]float64, len(str))
+	for _, v := range str {
+		if _, ok := ret[v]; ok {
+			ret[v] += float64(len(v))
+		} else {
+			ret[v] = float64(len(v))
+		}
+	}
+	return ret
 }

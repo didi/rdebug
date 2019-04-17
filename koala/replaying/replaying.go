@@ -11,21 +11,24 @@ import (
 )
 
 type ReplayingSession struct {
-	SessionId         string
-	CallFromInbound   *recording.CallFromInbound
-	ReturnInbound     *recording.ReturnInbound
-	CallOutbounds     []*recording.CallOutbound
-	RedirectDirs      map[string]string
-	MockFiles         map[string][]byte
-	TracePaths        []string
-	actionCollector   chan ReplayedAction
-	lastMaxScoreIndex int // outbounds level's last matched index
+	SessionId          string
+	CallFromInbound    *recording.CallFromInbound
+	ReturnInbound      *recording.ReturnInbound
+	CallOutbounds      []*recording.CallOutbound
+	RedirectDirs       map[string]string
+	MockFiles          map[string][]byte
+	TracePaths         []string
+	actionCollector    chan ReplayedAction
+
+	// outbounds's last matched index(for all connection)
+	// the key point is current value when call Match, not the realtime value, no need mutex
+	outsLastMatchedIdx int
 }
 
 func NewReplayingSession() *ReplayingSession {
 	return &ReplayingSession{
-		actionCollector:   make(chan ReplayedAction, 40960),
-		lastMaxScoreIndex: -1,
+		actionCollector:    make(chan ReplayedAction, 40960),
+		outsLastMatchedIdx: -1,
 	}
 }
 
@@ -112,5 +115,14 @@ func (replayingSession *ReplayingSession) Finish(response []byte) *ReplayedSessi
 		}
 	}
 	replayedSession.Actions = append(replayedSession.Actions, replayedSession.ReturnInbound)
+	Matcher.RShutdown(replayingSession)
 	return replayedSession
+}
+
+func (replayingSession *ReplayingSession) loadKeys() [][]byte {
+	keys := make([][]byte, len(replayingSession.CallOutbounds))
+	for i, entry := range replayingSession.CallOutbounds {
+		keys[i] = entry.Request
+	}
+	return keys
 }

@@ -144,11 +144,15 @@ class SearchCommand extends BaseCommand
     public function getFixParamsDSL($params)
     {
         if (!empty($params['outbound_request'])) {
-            $params['outbound_request'] = sprintf('x%d%s',
-                base_convert(strlen($params['outbound_request']), 10, 16),
-                $params['outbound_request']
-            );
-            $dsl                        = new EsDSL();
+            $fix = [];
+            foreach ($params['outbound_request'] as $outbound) {
+                $fix[] = sprintf('x%d%s',
+                    base_convert(strlen($outbound), 10, 16),
+                    $params['outbound_request']
+                );
+            }
+            $params['outbound_request'] = $fix;
+            $dsl = new EsDSL();
             $dsl->build($params);
             return [$dsl];
         }

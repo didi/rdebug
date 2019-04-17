@@ -19,7 +19,7 @@ namespace Midi\Koala\Replaying;
 */ 
 class CallOutbound extends \ArrayObject {
 
-    public static $SCHEMA = array( 
+    public static $SCHEMA = array(
         'disfSchemaFormatVersion' => 1003,
         'isUnion' => false,
         'classObject' => CallOutbound::class,
@@ -27,45 +27,51 @@ class CallOutbound extends \ArrayObject {
         'annotations' => array(),
         'fields' => array(
             "ActionIndex" => array(
-                "fieldId" => 1, 
+                "fieldId" => 1,
                 "thriftType" => 'I64',
                 "isRequired" => False,
                 "annotations" => array(),
             ),
             "OccurredAt" => array(
-                "fieldId" => 2, 
+                "fieldId" => 2,
                 "thriftType" => 'I64',
                 "isRequired" => False,
                 "annotations" => array(),
             ),
             "ActionType" => array(
-                "fieldId" => 3, 
+                "fieldId" => 3,
                 "thriftType" => 'STRING',
                 "isRequired" => False,
                 "annotations" => array(),
             ),
             "Peer" => array(
-                "fieldId" => 4, 
+                "fieldId" => 4,
                 "thriftType" => 'STRUCT',
                 "isRequired" => False,
                 "annotations" => array(),
                 "classObject" => \Midi\Koala\Replaying\Peer::class,
             ),
             "Request" => array(
-                "fieldId" => 5, 
+                "fieldId" => 5,
                 "thriftType" => 'STRING',
                 "isRequired" => False,
                 "annotations" => array(),
             ),
             "ResponseTime" => array(
-                "fieldId" => 6, 
+                "fieldId" => 6,
                 "thriftType" => 'I64',
                 "isRequired" => False,
                 "annotations" => array(),
             ),
             "Response" => array(
-                "fieldId" => 7, 
+                "fieldId" => 7,
                 "thriftType" => 'STRING',
+                "isRequired" => False,
+                "annotations" => array(),
+            ),
+            "SocketFD" => array(
+                "fieldId" => 8,
+                "thriftType" => 'I64',
                 "isRequired" => False,
                 "annotations" => array(),
             ),
@@ -107,6 +113,10 @@ class CallOutbound extends \ArrayObject {
 
         if(isset($array["Response"])) { 
             $this->setResponse($array["Response"]);
+        }
+
+        if(isset($array["SocketFD"])) {
+            $this->setSocketFD($array["SocketFD"]);
         }
 
     }
@@ -208,6 +218,21 @@ class CallOutbound extends \ArrayObject {
     public function setResponse(/* string */ $val) {
         $this["Response"] = \Midi\Koala\Common\TypeConverter::to_string($val);
     }
+
+    /**
+     * @return int
+     */
+    public function getSocketFD()/* : int */ {
+        return \Midi\Koala\Common\TypeConverter::to_int($this["SocketFD"]);
+    }
+
+    /**
+     * @param int $val
+     */
+    public function setSocketFD(/* int */ $val) {
+        $this["SocketFD"] = \Midi\Koala\Common\TypeConverter::to_int($val);
+    }
+
 }
 
 /* THRIFT IDL
@@ -222,5 +247,6 @@ struct CallOutbound {
     5: binary Request
     6: i64 ResponseTime
     7: binary Response
+    8: i64 SocketFD
 }
 */

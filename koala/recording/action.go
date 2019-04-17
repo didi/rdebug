@@ -2,6 +2,7 @@ package recording
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"unicode/utf8"
 )
@@ -86,6 +87,19 @@ func (callOutbound *CallOutbound) MarshalJSON() ([]byte, error) {
 		Response:     EncodeAnyByteArray(callOutbound.Response),
 		CSpanId:      EncodeAnyByteArray(callOutbound.CSpanId),
 	})
+}
+
+func (callOutbound *CallOutbound) GetIdentifier() string {
+	prefix := ""
+	if len(callOutbound.Peer.IP) != 0 {
+		prefix = callOutbound.Peer.String()
+	} else if len(callOutbound.UnixAddr.Name) != 0 {
+		prefix = callOutbound.UnixAddr.String()
+	} else {
+		return ""
+	}
+
+	return fmt.Sprintf("%s#%d", prefix, callOutbound.SocketFD)
 }
 
 type AppendFile struct {

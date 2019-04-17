@@ -58,7 +58,7 @@ func handleOutbound(conn *net.TCPConn) {
 	tcpAddr := conn.RemoteAddr().(*net.TCPAddr)
 	countlog.Trace("event!outbound.new_conn", "addr", tcpAddr)
 	buf := make([]byte, 1024)
-	connLastMatchedIndex := fakeIndexNotMatched
+	connMatchedCtx := replaying.NewConnMatchContext(tcpAddr, fakeIndexNotMatched)
 	ctx := context.WithValue(context.Background(), "outboundSrc", tcpAddr.String())
 	protocol := ""
 	beginTime := time.Now()
@@ -91,17 +91,17 @@ func handleOutbound(conn *net.TCPConn) {
 			return
 		}
 		callOutbound := replaying.NewCallOutbound(*tcpAddr, request)
-		// fix http 100 continue
-		if err := applySimulation(simulateHttp, ctx, request, conn, callOutbound); err != nil {
-			return
-		}
-		// some mysql connection setup interaction might not recorded
-		if err := applySimulation(simulateMysql, ctx, request, conn, callOutbound); err != nil {
-			return
-		}
+		//// fix http 100 continue
+		//if err := applySimulation(simulateHttp, ctx, request, conn, callOutbound); err != nil {
+		//	return
+		//}
+		//// some mysql connection setup interaction might not recorded
+		//if err := applySimulation(simulateMysql, ctx, request, conn, callOutbound); err != nil {
+		//	return
+		//}
 		var matchedTalk *recording.CallOutbound
 		var mark float64
-		connLastMatchedIndex, mark, matchedTalk = replaying.Matcher.DoMatch(ctx, connLastMatchedIndex, request, replayingSession)
+		_, mark, matchedTalk = replaying.Matcher.Match(connMatchedCtx, request, replayingSession)
 		if callOutbound.MatchedActionIndex != fakeIndexSimulated {
 			if matchedTalk == nil {
 				callOutbound.MatchedRequest = nil
@@ -156,6 +156,7 @@ func readRequest(ctx context.Context, conn *net.TCPConn, buf []byte, isFirstPack
 	}
 	bytesRead, err := conn.Read(buf)
 	if err == io.EOF {
+		countlog.Trace("event!outbound.read_request_EOF", "ctx", ctx, "err", err)
 		return "", nil
 	}
 	protocol := ""
@@ -165,9 +166,7 @@ func readRequest(ctx context.Context, conn *net.TCPConn, buf []byte, isFirstPack
 			countlog.Debug("event!outbound.write_mysql_greeting", "ctx", ctx)
 			_, err := conn.Write(mysqlGreeting)
 			if err != nil {
-				countlog.Error("event!outbound.failed to write mysql greeting",
-					"ctx", ctx,
-					"err", err)
+				countlog.Error("event!outbound.failed to write mysql greeting", "ctx", ctx, "err", err)
 				return "", nil
 			}
 			protocol = "mysql"
@@ -179,12 +178,12 @@ func readRequest(ctx context.Context, conn *net.TCPConn, buf []byte, isFirstPack
 		conn.SetReadDeadline(time.Now().Add(time.Millisecond * 3))
 		bytesRead, err := conn.Read(buf)
 		if err != nil {
-			countlog.Trace("event!outbound.read_request_err", "ctx", ctx, "err", err)
+			countlog.Trace("event!outbound.read_request_err", "ctx", ctx, "err", err) // i/o timeout
 			break
 		}
 		request = append(request, buf[:bytesRead]...)
 	}
-	countlog.Debug("event!outbound.request", "ctx", ctx, "content", request,
+	countlog.Debug("event!outbound.finish_read_request", "ctx", ctx, "content", request,
 		"isFirstPacket", isFirstPacket, "protocol", protocol)
 	return protocol, request
 }

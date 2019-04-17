@@ -7,6 +7,7 @@ RDEBUG=$(cd ../`dirname $0` && pwd -P)
 case $1 in
     "recorder" )
         # record to file, only for testing purpose
+        export GOPATH=/tmp/build-golang
         export CGO_CFLAGS="-DKOALA_LIBC_NETWORK_HOOK -DKOALA_LIBC_FILE_HOOK"
         export CGO_CPPFLAGS="-DKOALA_LIBC_NETWORK_HOOK -DKOALA_LIBC_FILE_HOOK"
         export CGO_CXXFLAGS="-std=c++11 -Wno-ignored-attributes"
