@@ -1,46 +1,49 @@
 package replaying
 
 import (
-	"context"
-	"github.com/didi/rdebug/koala/envarg"
+	"fmt"
+	"net"
+
 	"github.com/didi/rdebug/koala/recording"
 )
 
+const SimMatch = "sim"
+
 type MatcherIf interface {
-	DoMatch(ctx context.Context, connLastMatchedIndex int, request []byte, replayingSession *ReplayingSession) (int, float64, *recording.CallOutbound)
+	Match(connMatchContext *ConnMatchContext, request []byte, replayingSession *ReplayingSession) (int, float64, *recording.CallOutbound)
+	RShutdown(replayingSession *ReplayingSession) bool // ReplayingSession shutdown
 }
 
-type SimMatcher struct {
+// connect level's matched context
+type ConnMatchContext struct {
+	ClientAddr *net.TCPAddr
+	LastMatchedIndex int
+	MatchedCounter map[string]int
 }
 
-type ChunkMatcher struct {
+func NewConnMatchContext(addr *net.TCPAddr, lastMatchedIndex int) *ConnMatchContext {
+	return &ConnMatchContext{
+		ClientAddr:       addr,
+		LastMatchedIndex: lastMatchedIndex,
+		MatchedCounter: map[string]int{},
+	}
 }
 
-var Matcher MatcherIf
-var MatchThreshold float64
-
-func InitMatcher() {
-	//init matcher
-	if envarg.ReplayingMatchStrategy() == replayingSimHashMatch {
-		Matcher = SimMatcher{}
+func (c *ConnMatchContext) UpdateCounter(callOutbound *recording.CallOutbound) {
+	key := callOutbound.GetIdentifier()
+	if len(key) == 0 {
+		return
+	}
+	counter := c.MatchedCounter
+	if count, ok := counter[key]; ok {
+		counter[key] = count + 1
 	} else {
-		Matcher = ChunkMatcher{}
+		counter[key] = 1
 	}
-	
-	//init match threshold
-	MatchThreshold = envarg.ReplayingMatchThreshold()
+	c.MatchedCounter = counter
 }
 
-func (matchSim SimMatcher) DoMatch(ctx context.Context, connLastMatchedIndex int, request []byte, replayingSession *ReplayingSession) (int, float64, *recording.CallOutbound) {
-	return replayingSession.similarityMatch(ctx, connLastMatchedIndex, request)
-}
-
-func (matchOther ChunkMatcher) DoMatch(ctx context.Context, connLastMatchedIndex int, request []byte, replayingSession *ReplayingSession) (int, float64, *recording.CallOutbound) {
-	lastMatchedIndex, mark, matchedTalk := replayingSession.chunkMatch(ctx, connLastMatchedIndex, request)
-	if matchedTalk == nil && connLastMatchedIndex >= 0 {
-		// rematch from begin and lastMatchedIndex = -1 maybe first chunk has more weight
-		// TODO: reduce cutToChunks to once, now is twice
-		return replayingSession.chunkMatch(ctx, -1, request)
-	}
-	return lastMatchedIndex, mark, matchedTalk
+func (c *ConnMatchContext) String () string {
+	return fmt.Sprintf("{ClientAddr=%s, LastMatchedIndex=%d, MatchedCounter=%#v}",
+		c.ClientAddr.String(), c.LastMatchedIndex, c.MatchedCounter)
 }

@@ -191,6 +191,7 @@ class ParseRecorded
                     $callOutbound->setResponseTime($action['ResponseTime']);
                     $callOutbound->setRequest(base64_encode(stripcslashes($action['Request'])));
                     $callOutbound->setResponse(base64_encode(stripcslashes($action['Response'])));
+                    $callOutbound->setSocketFD($action['SocketFD']);
                     $ret['CallOutbounds'][] = $callOutbound;
                     break;
                 case 'AppendFile':
