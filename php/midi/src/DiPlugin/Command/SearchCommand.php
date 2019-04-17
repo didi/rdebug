@@ -6,16 +6,16 @@
 
 namespace DiPlugin\Command;
 
+use DiPlugin\Message;
+use DiPlugin\Resolver\ElasticResolver;
+use DiPlugin\Resolver\EsDSL;
 use Midi\Command\BaseCommand;
 use Midi\Container;
 use Midi\Koala\ParseRecorded;
-use DiPlugin\Message;
-use DiPlugin\Resolver\EsDSL;
-use DiPlugin\Resolver\ElasticResolver;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class SearchCommand extends BaseCommand
 {
@@ -44,6 +44,8 @@ class SearchCommand extends BaseCommand
             ->addOption('--run', '-r', InputOption::VALUE_NONE, '搜索后 直接运行')
             ->addOption('--exclude-key', '-E', InputOption::VALUE_OPTIONAL, '忽略某 Keys 的 DIFF', false)
             ->addOption('--display-diff-only', '-D', InputOption::VALUE_OPTIONAL, '是否只显示 DIFF，默认全部显示', false)
+            ->addOption('--open', '-O', InputOption::VALUE_NONE, '回放流量后，直接在浏览器中打开报告')
+            ->addOption('--report', '-R', InputOption::VALUE_NONE, '生成回放报告')
             ->setHelp('<info>php midi search</info>');
     }
 
@@ -58,7 +60,7 @@ class SearchCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->output = $output;
-        $stopWatch = Container::make('stopWatch');
+        $stopWatch    = Container::make('stopWatch');
         $stopWatch->start('search');
 
         $recordedSession = ElasticResolver::asyncQuery($this->parseParams($input));
@@ -125,8 +127,8 @@ class SearchCommand extends BaseCommand
 
         if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             /* mini */
-            $url = $fcgi['params']['REQUEST_URI'];
-            $pos = strpos($url, '?');
+            $url     = $fcgi['params']['REQUEST_URI'];
+            $pos     = strpos($url, '?');
             $onlyUri = $pos !== false ? substr($url, 0, $pos) : $url;
             $this->output->writeln("<info>Request: <comment>" . $onlyUri . " ...</comment> -v READ MORE</info>");
             $this->output->writeln("<info>Response: <comment>" . substr($resp, 0,
@@ -162,6 +164,12 @@ class SearchCommand extends BaseCommand
         $runInput = ['--sessionId' => $sessionIds,];
         if ($input->getOption('exclude-key') !== false) {
             $runInput['--exclude-key'] = $input->getOption('exclude-key') ?? true;
+        }
+        if ($input->getOption('report') !== false) {
+            $runInput['--report'] = $input->getOption('report') ?? true;
+        }
+        if ($input->getOption('open') !== false) {
+            $runInput['--open'] = $input->getOption('open') ?? true;
         }
         $runInput['--display-diff-only'] = $input->getOption('display-diff-only'); // 透传
 
