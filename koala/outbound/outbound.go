@@ -71,10 +71,8 @@ func handleOutbound(conn *net.TCPConn) {
 			if protocol == "mysql" && request != nil {
 				continue
 			}
-			if request == nil { // EOF, eg: HTTP 100-continue, second request body is empty
-				countlog.Warn("event!outbound.received empty request", "ctx", ctx, "i", i)
-				return
-			}
+			countlog.Warn("event!outbound.received empty request", "ctx", ctx, "i", i)
+			return
 		}
 		replayingSession := replaying.RetrieveTmp(*tcpAddr)
 		if replayingSession == nil {
