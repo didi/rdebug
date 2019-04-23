@@ -26,10 +26,11 @@ COPY --from=BUILD $gopath_default/src/github.com/didi/rdebug/output/libs/koala-r
 COPY ./composer.json /usr/local/var/midi/composer.json
 COPY ./example/php/nginx.conf /opt/bitnami/nginx/conf
 COPY ./example/php/index.php /usr/local/var/koala/index.php
+COPY ./example/php/1548160113499755925-1158745 /usr/local/var/koala/1548160113499755925-1158745
 COPY ./example/php/docker/start.sh /usr/local/var/koala/start.sh
 COPY ./example/php/docker/supervisor.conf /usr/local/var/koala/supervisor.conf
 
-RUN install_packages apt-utils git vim curl lsof procps netcat ca-certificates sudo locales supervisor && \
+RUN install_packages apt-utils git vim curl lsof procps ca-certificates sudo locales supervisor && \
     chmod 444 /usr/local/var/koala/*so && \
     addgroup nobody && \
     sed -i -e 's/\s*Defaults\s*secure_path\s*=/# Defaults secure_path=/' /etc/sudoers && \

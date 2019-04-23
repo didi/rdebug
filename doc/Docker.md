@@ -41,5 +41,7 @@ $ docker run -v /tmp/recorded:/tmp/save-recorded-sessions -it --rm local-rdebug-
 > popd
 
 # Replay Session
+> /usr/local/var/midi/bin/midi run -f /usr/local/var/koala/1548160113499755925-1158745
+# Or, your recorded session
 > /usr/local/var/midi/bin/midi run -f /tmp/save-recorded-sessions/YOUR_SESSION_FILE
 ```
