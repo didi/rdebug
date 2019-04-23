@@ -182,7 +182,7 @@ class ReplayerCommand extends BaseCommand
         // So, When at linux platform we need register_shutdown_function to kill php -S server.
         if (OS::isLinux()) {
             try {
-                Util::checkPortsAvailable($this->koala->getPorts());
+                Util::throwIfPortsUsed($this->koala->getPorts());
             } catch (\Exception $e) {
                 static::stopReplayer($this->koala->getPorts());
             }
@@ -197,7 +197,7 @@ class ReplayerCommand extends BaseCommand
         static::prepareReplayerSo();
         static::prepareStaticFiles();
 
-        Util::checkPortsAvailable($this->koala->getPorts());
+        Util::throwIfPortsUsed($this->koala->getPorts());
 
         // need more check? subscribe preKoalaStart event
     }

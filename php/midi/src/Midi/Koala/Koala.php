@@ -19,6 +19,7 @@ use Midi\Plugin\PluginEvents;
 use Midi\Reporter\Tracer;
 use Midi\Util\OS;
 use Midi\Util\BM;
+use Midi\Util\Util;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
@@ -451,35 +452,28 @@ class Koala
      * @param int $timeout
      * @return bool
      */
-    public function isStartUp($timeout = 5)
+    public function isStartUp($timeout = 3)
     {
         $timeout = abs($timeout);
+        $checkList = [$this->inboundPort, $this->sutPort,];
+        $status = [$this->inboundPort => false, $this->sutPort => false,];
         $begin = time();
-        $process4 = new Process('nc -vz 127.0.0.1 ' . $this->inboundPort);
-        $process5 = new Process('nc -vz 127.0.0.1 ' . $this->sutPort);
-        $checkList = [4 => $process4, 5 => $process5,];
-        $status = [4 => false, 5 => false,];
-
         while (time() - $begin < $timeout) {
-            foreach ($checkList as $k => $process) {
-                $process->start();
-                foreach ($process as $resp) {
-                    $this->output->writeln("<info>Ping Koala, Pong: <comment>" . trim($resp) . "</comment></info>",
-                        OutputInterface::VERBOSITY_VERY_VERBOSE
-                    );
-                    if ((OS::isMacOs() && strpos($resp, 'succeeded') !== false)
-                        || (OS::isLinux() && strpos($resp, 'open') !== false)
-                    ) {
-                        $status[$k] = true;
-                        unset($checkList[$k]);
-                        break;
-                    }
-                }
+            list($ok, $err) = Util::checkPortsAvailable($checkList, '127.0.0.1', 0.5);
+            foreach ($ok as $port) {
+                $status[$port] = true;
             }
-            if ($status[4] && $status[5]) {
-                return true;
+            if (count($err) === 0) {
+                break;
             }
+            $checkList = $err;
             usleep(50000);
+        }
+        if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
+            $this->output->writeln("<info>Ping Koala Ports: <comment>" . json_encode($status) . "</comment></info>");
+        }
+        if ($status[$this->inboundPort] && $status[$this->sutPort]) {
+            return true;
         }
         return false;
     }

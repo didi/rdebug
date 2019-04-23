@@ -15,16 +15,29 @@ class Util
      * Check port available.
      *
      * @param array $ports
-     * @throws Exception
+     * @return array
      */
-    public static function checkPortsAvailable($ports)
+    public static function checkPortsAvailable($ports, $host = '127.0.0.1', $timeout = 1)
     {
+        $ok = [];
+        $err = [];
         foreach ($ports as $port) {
-            $process = new Process('nc -z 127.0.0.1 ' . $port);
-            $process->run();
-            if ($process->isSuccessful()) {
-                throw new Exception("<error>Port: " . trim($port) . " already in use!</error>");
+            $connection = @fsockopen($host, $port, $errno, $errstr, $timeout);
+            if (is_resource($connection)) {
+                $ok[] = $port;
+                fclose($connection);
+            } else {
+                $err[] = $port;
             }
+        }
+
+        return [$ok, $err];
+    }
+
+    public static function throwIfPortsUsed($ports) {
+        list($ok, $err) = static::checkPortsAvailable($ports);
+        if (count($ok)) {
+            throw new Exception("<error>Port: " . trim(implode(',', $ok)) . " already in used!</error>");
         }
     }
 

@@ -29,7 +29,8 @@ class DoctorCommand extends BaseCommand
             $output->writeln(Message::DOCTOR_COMMAND_WELCOME_INFO);
             ReplayerCommand::prepareReplayerSo(true);
             PreKoalaCheck::checkPhpExt();
-            Util::checkPortsAvailable($this->getMidi()->getKoala()->getPorts());
+            
+            Util::throwIfPortsUsed($this->getMidi()->getKoala()->getPorts());
 
             if ($moduleName = DiConfig::getModuleName()) {
                 // under module's dir
