@@ -33,6 +33,7 @@ error_reporting(\$_error_report_level);
 ?>
 
 CODE;
+
         $patchCode = '';
         $recordKeys = [];
 
@@ -50,12 +51,12 @@ CODE;
                 continue;
             }
             $recordKeys[$key] = 1;
-            $val = stripcslashes($contents[2]);
+            $val = $contents[2];
             $initCode = <<<CODE
-\$v = <<<VAL
+\$v = <<<'VAL'
 $val
 VAL;
-\$v = unserialize(\$v);
+\$v = unserialize(stripcslashes(\$v));
 if (\$v !== false) {
     apcu_store('$key', \$v);
 }
