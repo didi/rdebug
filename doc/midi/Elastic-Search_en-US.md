@@ -1,6 +1,6 @@
-## ElasticSearch Config
+## ElasticSearch
 
-流量写入ES前,需要为`SessionId`字段设置下数据类型,由于ES默认会将该字段设置为`text`,导致在`term`查找的时候,因为`-`导致分词
+Before the traffic is written to the ES,Need to set the data type for the `SessionId` field. Since the ES will set the field to `text` by default, When using `term` to search it, Will be caused analyze by '-' 
 
 ```
 PUT /rdebug_index
@@ -20,7 +20,7 @@ PUT /rdebug_index
 }
 ```
 
-建议通过别名使用ES
+It is recommended to use ES index by alias
 ```
 POST _aliases
 {
