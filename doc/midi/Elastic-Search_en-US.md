@@ -41,8 +41,6 @@ POST _aliases
 In config.yml, add an extension command
 ```
 custom-commands:
-    - DiPlugin\Command\DoctorCommand
-    - DiPlugin\Command\InitCommand
     - DiPlugin\Command\SearchCommand
 ```
 Set ES search URL
@@ -55,4 +53,22 @@ session-resolver: Midi\Resolver\ElasticResolver
 # set your elastic search url
 # http://username:password@ip:port/Index/Type/_search
 elastic-search-url: http://xxx.com/alias_rdebug_index/_doc/_search
+```
+
+In the directory where the `midi` command is executed，create or edit `.midi/Config.yml`
+
+Add an extension command and set ES search URL
+```
+php:
+    
+    # for elastic
+    preload-plugins:
+        - Midi\ElasticPlugin
+    session-resolver: Midi\Resolver\ElasticResolver
+    
+    # set your elastic search url
+    # http://username:password@ip:port/Index/Type/_search
+    elastic-search-url: http://xxx.com/alias_rdebug_index/_doc/_search
+    custom-commands:
+        - DiPlugin\Command\SearchCommand
 ```

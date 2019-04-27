@@ -38,21 +38,20 @@ POST _aliases
 ```
 
 ### 配置midi
-在config.yml中,增加扩展命令
-```
-custom-commands:
-    - DiPlugin\Command\DoctorCommand
-    - DiPlugin\Command\InitCommand
-    - DiPlugin\Command\SearchCommand
-```
-配置ES搜索链接
-```
-# for elastic
-preload-plugins:
-    - Midi\ElasticPlugin
-session-resolver: Midi\Resolver\ElasticResolver
+在执行 `midi` 命令的目录下，新建或修改 `.midi/Config.yml`
 
-# set your elastic search url
-# http://username:password@ip:port/Index/Type/_search
-elastic-search-url: http://xxx.com/alias_rdebug_index/_doc/_search
+增加扩展命令和ES地址
+```
+php:
+    
+    # for elastic
+    preload-plugins:
+        - Midi\ElasticPlugin
+    session-resolver: Midi\Resolver\ElasticResolver
+    
+    # set your elastic search url
+    # http://username:password@ip:port/Index/Type/_search
+    elastic-search-url: http://xxx.com/alias_rdebug_index/_doc/_search
+    custom-commands:
+        - DiPlugin\Command\SearchCommand
 ```
