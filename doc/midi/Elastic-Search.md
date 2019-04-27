@@ -1,7 +1,7 @@
 ## ElasticSearch
 
 ### 创建index
-流量写入ES前,需要为`SessionId`字段设置下数据类型,由于ES默认会将该字段设置为`text`,导致在`term`查找的时候,因为`-`导致分词
+流量写入ES前,需要为`SessionId`字段设置以下数据类型,由于ES默认会将该字段设置为`text`,导致在`term`查找的时候,因为`-`导致分词
 
 ```
 PUT /rdebug_index
