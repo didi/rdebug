@@ -44,10 +44,10 @@ $ export LC_CTYPE="C"
 
 # 启动 php-fpm 开始录制
 # macOS
-$ DYLD_INSERT_LIBRARIES="/path/to/koala-libc.so:/usr/lib/libcurl.dylib" DYLD_FORCE_FLAT_NAMESPACE="y" /path/to/sbin/php-fpm
+$ DYLD_INSERT_LIBRARIES="/path/to/koala-libc.so" DYLD_FORCE_FLAT_NAMESPACE="y" /path/to/sbin/php-fpm
 
 # or, Linux
-$ LD_PRELOAD="/path/to/koala-libc.so /usr/lib64/libcurl.so.4" /path/to/sbin/php-fpm
+$ LD_PRELOAD="/path/to/koala-libc.so" /path/to/sbin/php-fpm
 ```
 
 ### 回放流量
@@ -287,8 +287,5 @@ Rdebug is licensed under the Apache 2.0 License. [LICENSE](./LICENSE)
 
 特别感谢 [TaoWen](https://github.com/taowen) Koala & Koala-libc 开发者。
 
-[TanMingliang](https://github.com/MingliangT) WangBizhou FangJunda YangJing YangBochen LiXiaodong Midi 开发者。
-
-特别感谢 Symfony、Xdebug、PHPUnit & Code Coverage、guzzlehttp 等开发者，提供如此好用的工具。
-
-DingWei Wujun FanYitian ZhaoLu XuKaiwen HuXu FuYao HuMin 等同学的建议和帮助。
+感谢所有参与 Rdebug 开源项目的同学：
+<a href="https://github.com/didi/rdebug/graphs/contributors"><img src="https://opencollective.com/rdebug/contributors.svg?width=890&button=true" /></a>

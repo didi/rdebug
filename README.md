@@ -48,10 +48,10 @@ $ export LC_CTYPE="C"
 
 # Recording
 # macOS
-$ DYLD_INSERT_LIBRARIES="/path/to/koala-libc.so:/usr/lib/libcurl.dylib" DYLD_FORCE_FLAT_NAMESPACE="y" /path/to/sbin/php-fpm
+$ DYLD_INSERT_LIBRARIES="/path/to/koala-libc.so" DYLD_FORCE_FLAT_NAMESPACE="y" /path/to/sbin/php-fpm
 
 # or, Linux
-$ LD_PRELOAD="/path/to/koala-libc.so /usr/lib64/libcurl.so.4" /path/to/sbin/php-fpm
+$ LD_PRELOAD="/path/to/koala-libc.so" /path/to/sbin/php-fpm
 ```
 
 ### Traffic Replaying
@@ -284,12 +284,9 @@ Any contributions are welcome. [More Details](./CONTRIBUTING.md)
 
 Rdebug is licensed under the Apache 2.0 License. [LICENSE](./LICENSE)
 
-### 6.6 Thanks
+### 6.6 Contributors
 
-[TaoWen](https://github.com/taowen) Developer of Koala & Koala-libc
+Special thanks to [TaoWen](https://github.com/taowen) Developer of Koala & Koala-libc.
 
-[TanMingliang](https://github.com/MingliangT), WangBizhou, FangJunda, YangJing, YangBochen and LiXiaodong Developer of Midi
-
-A special thanks to Symfony、Xdebug、PHPUnit & Code Coverage、guzzlehttp…… contributors, develop such a useful software.
-
-Also thanks to DingWei Wujun, FanYitian, ZhaoLu, XuKaiwen, HuXu, FuYao and HuMin for suggestions.
+Thanks to all the people who [contribute](https://github.com/didi/rdebug/graphs/contributors).
+<a href="https://github.com/didi/rdebug/graphs/contributors"><img src="https://opencollective.com/rdebug/contributors.svg?width=890&button=true" /></a>
