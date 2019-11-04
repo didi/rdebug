@@ -3,11 +3,11 @@ set -e
 set -x
 
 RDEBUG=$(cd ../`dirname $0` && pwd -P)
+export GOPATH=/tmp/build-golang
 
 case $1 in
     "recorder" )
         # record to file, only for testing purpose
-        export GOPATH=/tmp/build-golang
         export CGO_CFLAGS="-DKOALA_LIBC_NETWORK_HOOK -DKOALA_LIBC_FILE_HOOK"
         export CGO_CPPFLAGS="-DKOALA_LIBC_NETWORK_HOOK -DKOALA_LIBC_FILE_HOOK"
         export CGO_CXXFLAGS="-std=c++11 -Wno-ignored-attributes"
@@ -18,7 +18,6 @@ case $1 in
             mkdir -p /tmp/build-golang/src/github.com/didi
             ln -s $RDEBUG /tmp/build-golang/src/github.com/didi/rdebug
         fi
-        export GOPATH=/tmp/build-golang
         if [ ! -f "$GOPATH/bin/glide" ]; then
             go get github.com/Masterminds/glide
         fi
