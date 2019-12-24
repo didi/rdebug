@@ -276,6 +276,10 @@ Any contributions are welcome. [More Details](./CONTRIBUTING.md)
 
 ### 6.4 Contract
 
+- Add Weixin
+
+<img src="https://raw.githubusercontent.com/didi/rdebug/master/doc/images/weixin_add_friend.jpg" width="180" height = "180">
+
 - QQ Group
     
 ![QQ](doc/images/QQChat.png)

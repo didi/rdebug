@@ -275,6 +275,10 @@ $ ./vendor/bin/midi -f RECORD-SESSION-FILE
 
 ### 6.4 联系我们
 
+- 加微信好友进群
+
+<img src="https://raw.githubusercontent.com/didi/rdebug/master/doc/images/weixin_add_friend.jpg" width="200" height = "200">
+
 - QQ 群 726777992
 
 ![QQ群](doc/images/QQChat.png)
