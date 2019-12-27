@@ -256,6 +256,7 @@ class ParseRecorded
         }
 
         foreach ($fixOutboundsIdx as $identifier => $todoFixIdxs) {
+            $lastFixIdx = '';
             $c = count($todoFixIdxs);
             for ($i = 0; $i < $c;) {
                 $todoFixIdx = $todoFixIdxs[$i];
@@ -264,9 +265,13 @@ class ParseRecorded
                     if (empty($outbounds[$nextIdx]["Request"])) {
                         $outbounds[$todoFixIdx]['Response'] = $outbounds[$nextIdx]["Response"];
                         unset($outbounds[$nextIdx]);
+                        $lastFixIdx = $todoFixIdx;
                         $i += 2;
                         continue;
                     }
+                } elseif (empty($outbounds[$todoFixIdx]["Request"]) && !empty($lastFixIdx)) {
+                    $outbounds[$lastFixIdx]['Response'] .= $outbounds[$todoFixIdx]["Response"];
+                    unset($outbounds[$todoFixIdx]);
                 }
                 ++$i;
             }
